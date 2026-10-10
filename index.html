@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#152137" />
+    <meta
+      name="description"
+      content="Find mapped Irvine parking sites near your starting address, compare past evidence, and plan your food truck shift."
+    />
+    <title>CityFit Irvine — Find your next stop</title>
+    <link rel="icon" href="./favicon.svg" />
+    <link rel="stylesheet" href="./vendor/leaflet.css" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script defer src="./vendor/leaflet.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#mainContent">Skip to content</a>
+    <aside class="sidebar">
+      <div class="brand">
+        City<span>Fit</span>
+        <div class="eyebrow">Irvine · Business Edition</div>
+      </div>
+      <nav class="nav" aria-label="Main navigation">
+        <button class="active" data-view="locations" aria-current="page">
+          <b>◎</b>Location Research</button
+        ><button data-view="planner"><b>▤</b>Shift Planner</button
+        ><button data-view="permits"><b>☑</b>Permit Checklist</button
+        ><button data-view="data"><b>◈</b>Data & Sources</button>
+      </nav>
+      <div class="sidecard">
+        <div class="eyebrow">One City. Your Business.</div>
+        <p>
+          Choose a service area, understand the approval path, and test your
+          shift economics.
+        </p>
+        <button class="btn outline" id="sidePlan">Plan A Shift →</button>
+      </div>
+      <div class="sidefoot">
+        Irvine, California<br />Places, Routes & Shift Planning<br /><br />Preferences
+        and logs save in this browser.
+      </div>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <div class="mobilebrand">CityFit Irvine</div>
+        <div class="crumb">
+          Irvine / <strong id="crumb">Location Research</strong>
+        </div>
+        <span class="badge blue">Irvine Only · Food Trucks</span>
+      </header>
+      <main class="content" id="mainContent" tabindex="-1">
+        <section id="locations" class="view">
+          <div class="finder-heading">
+            <div>
+              <div class="eyebrow">Your Next Service Location</div>
+              <h1>Find your next <span>stop in Irvine.</span></h1>
+              <p>
+                Specific parking lots near your address, with past event, shift
+                and road-count evidence.
+              </p>
+            </div>
+            <button class="btn dark" id="heroPlan">Open Shift Planner →</button>
+          </div>
+          <section class="origin-panel" aria-labelledby="nearbyTitle">
+            <div>
+              <div class="eyebrow">01 / Set Your Starting Point</div>
+              <h2 id="nearbyTitle">Where Are You Starting?</h2>
+              <label for="startAddress"
+                >Starting address or nearby landmark</label
+              >
+              <div class="address-wrap">
+                <div class="address-row">
+                  <input
+                    id="startAddress"
+                    type="text"
+                    maxlength="240"
+                    autocomplete="off"
+                    spellcheck="false"
+                    role="combobox"
+                    aria-autocomplete="list"
+                    aria-expanded="false"
+                    aria-controls="addressSuggestions"
+                    aria-describedby="addressStatus"
+                    placeholder="Enter an address, e.g. 1 Civic Center Plaza"
+                  /><button class="btn dark" id="findAddress" type="button">
+                    Find Address
+                  </button>
+                </div>
+                <div
+                  id="addressSuggestions"
+                  class="suggestions"
+                  role="listbox"
+                  aria-label="Suggested address matches"
+                  hidden
+                ></div>
+              </div>
+              <div
+                class="origin-status"
+                id="addressStatus"
+                role="status"
+                aria-live="polite"
+              >
+                Choose a suggested match to use its corrected address.
+              </div>
+              <div class="address-actions">
+                <button class="gps-button" id="useLocation" type="button">
+                  <span aria-hidden="true">⌖</span> Use My Current Location</button
+                ><button class="textbtn" id="exampleOrigin" type="button">
+                  Try Irvine City Hall</button
+                ><button class="textbtn" id="clearOrigin" type="button" hidden>
+                  Clear
+                </button>
+              </div>
+              <div class="search-credit">
+                Address suggestions by Photon · © OpenStreetMap contributors
+              </div>
+            </div>
+            <div class="radius-box">
+              <div class="labelrow">
+                <label for="mileRadius">Your Search Radius</label
+                ><output class="radius-value" id="radiusValue" for="mileRadius"
+                  >15 mi</output
+                >
+              </div>
+              <input
+                id="mileRadius"
+                type="range"
+                min="10"
+                max="30"
+                step="5"
+                value="15"
+                aria-describedby="radiusHelp"
+              />
+              <div class="radius-ticks" aria-hidden="true">
+                <span>10</span><span>15</span><span>20</span><span>25</span
+                ><span>30 mi</span>
+              </div>
+              <p class="help" id="radiusHelp">
+                Straight-line distance. Only mapped parking sites inside Irvine
+                are included. Coverage is partial.
+              </p>
+            </div>
+            <div class="near-summary" id="nearSummary" hidden></div>
+          </section>
+          <section class="service-strip" aria-label="Your service profile">
+            <div class="field">
+              <label for="cuisine"><span>02</span> What Will You Serve?</label
+              ><select id="cuisine">
+                <option value="meals">Meals, Tacos & Bowls</option>
+                <option value="coffee">Coffee & Breakfast</option>
+                <option value="dessert">Desserts & Snacks</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="slot"><span>03</span> When Will You Serve?</label
+              ><select id="slot">
+                <option value="breakfast">Breakfast · 7–10 A.M.</option>
+                <option value="lunch">Lunch · 11 A.M.–2 P.M.</option>
+                <option value="dinner">Dinner · 5–8 P.M.</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="day"><span>04</span> Which Days?</label
+              ><select id="day">
+                <option value="weekday">Weekdays</option>
+                <option value="weekend">Weekends</option>
+              </select>
+            </div>
+            <div class="profile-note">
+              Your profile carries into the shift planner. Actual customer
+              demand comes from your shift records.
+            </div>
+          </section>
+          <div class="finder-stats">
+            <div>
+              <span class="stat-label">In Your Radius</span
+              ><strong id="venueCount">—</strong
+              ><small>Mapped Parking Lots in Irvine</small>
+            </div>
+            <div>
+              <span class="stat-label">Closest Match</span
+              ><strong id="closestDistance">—</strong
+              ><small>Straight-Line Miles</small>
+            </div>
+            <div>
+              <span class="stat-label">Your Shortlist</span
+              ><strong id="savedCount">0</strong><small>Saved Locations</small>
+            </div>
+            <div>
+              <span class="stat-label">Permit Preparation</span
+              ><strong id="permitCount">0 / 6</strong
+              ><small>Recorded by You</small>
+            </div>
+          </div>
+          <div class="finder-controls">
+            <div class="field">
+              <label for="venueCategory">Nearby Venue Type</label
+              ><select id="venueCategory">
+                <option value="all">All Venue Types</option>
+                <option value="retail">Retail & Shopping</option>
+                <option value="workplace">Offices & Workplaces</option>
+                <option value="campus">Campuses</option>
+                <option value="recreation">Parks & Sports</option>
+                <option value="community">Community & Events</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="placeProvider">Location Source</label
+              ><select id="placeProvider">
+                <option value="public">Mapped Surface Parking</option>
+                <option value="google" disabled>
+                  Google Maps · Not Connected
+                </option>
+                <option value="apple" disabled>
+                  Apple Maps · Not Connected
+                </option>
+              </select>
+            </div>
+            <label class="checkline"
+              ><input type="checkbox" id="savedOnly" />Saved Only</label
+            ><label class="checkline"
+              ><input type="checkbox" id="permissionOnly" />My Confirmed
+              Approvals</label
+            ><button class="refresh-button" id="refreshPlaces" type="button">
+              ↻ Reload Records
+            </button>
+          </div>
+          <div class="discovery-grid">
+            <section class="map-panel" aria-labelledby="mapTitle">
+              <div class="map-header">
+                <div>
+                  <h2 id="mapTitle" tabindex="-1">
+                    Truck Parking Near Your Start
+                  </h2>
+                  <span id="mapSubtitle"
+                    >Set a starting point to draw your radius.</span
+                  >
+                </div>
+                <button class="textbtn" type="button" id="resetMap">
+                  Fit Results ↗
+                </button>
+              </div>
+              <div
+                id="discoveryMap"
+                class="discovery-map"
+                role="region"
+                aria-label="Irvine venue map"
+              ></div>
+              <div class="map-fallback" id="mapFallback" hidden>
+                The map is unavailable. Your ranked locations and map links
+                remain available.
+              </div>
+              <div class="map-provider" id="providerMapHandoff" hidden></div>
+              <div class="map-legend">
+                <span><i class="legend-origin"></i>Your Starting Point</span
+                ><span><i class="legend-venue"></i>Ranked Parking Lots</span
+                ><span><i class="legend-road"></i>Historical Road Counts</span
+                ><span><i class="legend-radius"></i>Search Radius</span>
+              </div>
+              <div class="map-evidence">
+                <span class="source-dot"></span
+                ><span id="catalogStamp">Loading Parking Records…</span
+                ><span id="trafficStamp"
+                  >City Traffic · Checking Latest Year</span
+                >
+              </div>
+            </section>
+            <section class="ranked-results" aria-labelledby="resultsTitle">
+              <div class="resultshead">
+                <div>
+                  <div class="eyebrow">Your Top 10</div>
+                  <h2 id="resultsTitle">Nearby Parking Sites</h2>
+                  <p id="resultDescription" role="status" aria-live="polite">
+                    Choose a starting point to find nearby parking sites.
+                  </p>
+                </div>
+              </div>
+              <div class="sort-row">
+                <label for="sortAreas">Rank by</label
+                ><select id="sortAreas">
+                  <option value="history">Past Shift & Event Evidence</option>
+                  <option value="nearest">Closest First</option>
+                  <option value="traffic">
+                    Measured Road Traffic · Historical
+                  </option>
+                  <option value="reviews" disabled>Google Review Count</option>
+                </select>
+              </div>
+              <p class="ranking-caption" id="rankingCaption">
+                Pins identify mapped parking lots. Review source evidence and
+                confirm the exact service bay with the host.
+              </p>
+              <div id="cards" class="venue-cards" aria-live="polite"></div>
+            </section>
+          </div>
+          <details class="ranking-method">
+            <summary>How are parking sites recommended?</summary>
+            <p>
+              Results are mapped OpenStreetMap surface parking lots inside
+              Irvine, filtered by distance from your selected address. Private
+              lots, lots that explicitly prohibit trucks, and parking garages
+              are excluded. Missing truck access or capacity stays unknown.
+              Category labels describe the closest mapped venue within 0.35
+              miles; they do not establish ownership.
+            </p>
+            <p>
+              Past evidence ranks your recorded orders per hour for the selected
+              menu at the exact lot, then published past food-truck events,
+              historical City road counts, and distance. Venue event evidence
+              does not identify the lot used by the trucks. Parking records
+              cover selected Irvine areas and are incomplete. Pins indicate
+              mapped lot centers; lot outlines and nearby measured roads come
+              from source geometry. Confirm truck fit and host approval for the
+              precise service bay.
+            </p>
+          </details>
+        </section>
+        <section class="view" id="planner" hidden>
+          <div class="titleblock">
+            <div class="eyebrow">Know Your Numbers</div>
+            <h1>Plan Your Shift.</h1>
+            <p>
+              Choose a location, enter your sales and fees, and see your
+              estimate update as you type.
+            </p>
+          </div>
+          <div class="two">
+            <form class="panel planner-inputs" id="budgetForm">
+              <h3>1. Set Up Your Shift</h3>
+              <div class="field">
+                <label for="budgetArea">Service location</label
+                ><select
+                  id="budgetArea"
+                  required
+                  aria-describedby="trafficStatus trafficHelp"
+                ></select>
+                <p
+                  class="help"
+                  id="trafficStatus"
+                  role="status"
+                  aria-live="polite"
+                ></p>
+                <button class="textbtn" type="button" id="plannerLocation">
+                  Change Starting Point →
+                </button>
+                <div id="trafficDetail" class="distance-detail" hidden></div>
+                <p class="help" id="trafficHelp">
+                  Choose from your top 10 matches. Confirm host permission
+                  before booking.
+                </p>
+              </div>
+              <div class="formgrid">
+                <div class="field">
+                  <label for="orders">Expected Orders</label
+                  ><input
+                    id="orders"
+                    type="number"
+                    min="0"
+                    max="10000"
+                    step="1"
+                    value="80"
+                    required
+                  />
+                  <p
+                    class="help"
+                    id="ordersStatus"
+                    role="status"
+                    aria-live="polite"
+                  ></p>
+                </div>
+                <div class="field">
+                  <label for="ticket">Average Order Value ($)</label
+                  ><input
+                    id="ticket"
+                    type="number"
+                    min="0.01"
+                    max="1000"
+                    step="0.01"
+                    value="14"
+                    required
+                  />
+                </div>
+                <h4 class="planner-group-title">Operating Costs</h4>
+                <div class="field">
+                  <label for="food">Food & packaging cost (%)</label
+                  ><input
+                    id="food"
+                    type="number"
+                    min="0"
+                    max="99"
+                    step="0.1"
+                    value="35"
+                    required
+                  />
+                </div>
+                <div class="field">
+                  <label for="payment">Payment processing (%)</label
+                  ><input
+                    id="payment"
+                    type="number"
+                    min="0"
+                    max="50"
+                    step="0.1"
+                    value="3"
+                    required
+                  />
+                </div>
+                <h4 class="planner-group-title">Truck & Travel</h4>
+                <div class="field">
+                  <label for="travel">Fuel + travel ($)</label
+                  ><input
+                    id="travel"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value="0"
+                    readonly
+                    aria-describedby="travelSummary"
+                  />
+                  <p
+                    class="help"
+                    id="travelSummary"
+                    role="status"
+                    aria-live="polite"
+                  ></p>
+                </div>
+                <div class="field">
+                  <label for="fuelType">Truck fuel grade</label
+                  ><select id="fuelType">
+                    <option value="2">Regular Gasoline</option>
+                    <option value="1">Diesel</option>
+                    <option value="3">Mid-Grade Gasoline</option>
+                    <option value="4">Premium Gasoline</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="mpg">Truck fuel economy (MPG)</label
+                  ><input
+                    id="mpg"
+                    type="number"
+                    min="1"
+                    max="100"
+                    step="0.1"
+                    value="10"
+                    required
+                  />
+                </div>
+                <div class="field">
+                  <label for="fuelPrice">Fuel price ($/gal)</label
+                  ><input
+                    id="fuelPrice"
+                    inputmode="decimal"
+                    aria-describedby="fuelPriceStatus"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="any"
+                    value="5"
+                    required
+                  />
+                  <p
+                    class="help"
+                    id="fuelPriceStatus"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    Enter your fuel price per gallon. $5 is a sample assumption.
+                  </p>
+                </div>
+              </div>
+              <p class="help">
+                Estimates include food, payment processing and fuel, and exclude
+                sales tax.
+              </p>
+              <button class="btn dark" type="button" id="exportPlan">
+                Download Shift Plan PDF
+              </button>
+              <p class="localstatus" id="areaStatus"></p>
+            </form>
+            <div class="panel planner-summary">
+              <span class="badge blue">Based On Your Inputs</span>
+              <h3 style="margin: 18px 0 3px">2. Your Shift Estimate</h3>
+              <div class="summarynum" id="surplus">$0</div>
+              <div id="budgetRows"></div>
+              <div
+                class="budgetbar"
+                id="budgetBar"
+                aria-label="Cost breakdown"
+              ></div>
+              <div class="legend">
+                <span
+                  ><i class="dot" style="background: #93aaa0"></i>Variable
+                  costs</span
+                ><span
+                  ><i class="dot" style="background: #d7bb95"></i>Fixed
+                  costs</span
+                ><span
+                  ><i class="dot" style="background: #226d63"></i>Surplus</span
+                >
+              </div>
+              <div class="callout" id="breakeven"></div>
+              <h3>Lower Sales Scenarios</h3>
+              <div class="scenarios" id="scenarios"></div>
+              <p class="help">
+                Estimated money left after the costs you entered, before income
+                tax. Actual sales may differ.
+              </p>
+            </div>
+          </div>
+          <div class="sectiontitle">
+            <h2>Record A Finished Shift</h2>
+            <button class="btn secondary" id="exportLog">
+              Export Shift Log
+            </button>
+          </div>
+          <div class="two">
+            <form class="panel" id="logForm">
+              <h3>Record A Completed Shift</h3>
+              <div class="field">
+                <label for="logArea">Service location</label
+                ><select id="logArea"></select>
+              </div>
+              <div class="formgrid">
+                <div class="field">
+                  <label for="logDate">Date</label
+                  ><input id="logDate" type="date" required />
+                </div>
+                <div class="field">
+                  <label for="logCuisine">Menu style</label
+                  ><select id="logCuisine">
+                    <option value="meals">Meals, Tacos & Bowls</option>
+                    <option value="coffee">Coffee & Breakfast</option>
+                    <option value="dessert">Desserts & Snacks</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="logOrders">Actual orders</label
+                  ><input
+                    id="logOrders"
+                    type="number"
+                    min="0"
+                    max="10000"
+                    step="1"
+                    required
+                  />
+                </div>
+                <div class="field">
+                  <label for="logHours">Service hours</label
+                  ><input
+                    id="logHours"
+                    type="number"
+                    min="0.25"
+                    max="24"
+                    step="0.25"
+                    required
+                  />
+                </div>
+              </div>
+              <div class="field">
+                <label for="logNotes">Customer requests or observations</label
+                ><input
+                  id="logNotes"
+                  maxlength="300"
+                  placeholder="e.g. 8 customers requested vegetarian bowls"
+                />
+              </div>
+              <button class="btn" type="submit">Save Actual Shift</button>
+              <p class="help" style="margin: 12px 0 0">
+                Your observations stay in this browser. Use repeated shifts to
+                measure customer demand.
+              </p>
+            </form>
+            <div class="panel">
+              <h3>Your Shift History</h3>
+              <div id="logSummary"></div>
+              <div class="loglist" id="logs"></div>
+            </div>
+          </div>
+        </section>
+        <section class="view" id="permits" hidden>
+          <div class="titleblock">
+            <div class="eyebrow">Prepare Before You Park</div>
+            <h1>Get Ready To Serve.</h1>
+            <p>
+              Start with these six steps. Use each link for help, then check the
+              box when you have completed that step.
+            </p>
+          </div>
+          <div class="two permit-overview">
+            <div class="panel">
+              <div class="resultshead">
+                <h3>1. Complete These Steps</h3>
+                <span class="badge" id="checkProgress">0 of 6 Recorded</span>
+              </div>
+              <div class="progress"><div id="progressFill"></div></div>
+              <div id="permitItems"></div>
+              <p class="help">
+                Your checks are saved in this browser. Checking a box does not
+                grant a permit or permission to sell food.
+              </p>
+            </div>
+            <div>
+              <div class="callout">
+                <strong>Staying longer than one hour?</strong>
+                <p style="margin: 6px 0 0">
+                  OC Health says a mobile food facility must be within 200 feet
+                  of travel distance of an approved, available restroom and
+                  handwashing facility. Confirm the arrangement for the exact
+                  stop.
+                </p>
+                <a
+                  href="https://ochealthinfo.com/services-programs/environmental-health/food-safety-programs/mobile-food-trucks-and-carts"
+                  target="_blank"
+                  rel="noopener"
+                  >OC restroom requirements ↗</a
+                >
+              </div>
+              <div class="panel">
+                <h3>Irvine Business Licensing</h3>
+                <p class="help">
+                  Check the City’s licensing page for application access and
+                  service updates, or contact the licensing team.
+                </p>
+                <a
+                  href="https://cityofirvine.gov/community-development/business-licensing"
+                  target="_blank"
+                  rel="noopener"
+                  >City licensing page ↗</a
+                >
+              </div>
+            </div>
+          </div>
+          <div class="sectiontitle"><h2>2. Check Your Parking Spot</h2></div>
+          <p class="help">
+            The steps above apply to your business. The guidance below is for
+            the service location selected in Shift Planner.
+          </p>
+          <div class="panel permit-selected-location">
+            <div>
+              <strong id="permitLocationName"></strong>
+              <p class="help" id="permitLocationAddress"></p>
+            </div>
+            <button class="btn secondary" id="changePermitLocation">
+              Change Service Location
+            </button>
+          </div>
+          <div id="lotPermits" class="lot-permits"></div>
+        </section>
+        <section class="view" id="data" hidden>
+          <div class="titleblock">
+            <div class="eyebrow">Trace Every Result</div>
+            <h1>Data And Sources.</h1>
+            <p>Key sources and limits behind your results.</p>
+          </div>
+          <div class="provider-connections" id="providerConnections"></div>
+          <div class="sourcegrid" id="sourceCards"></div>
+          <div class="panel method">
+            <h3>What To Know</h3>
+            <p>
+              Saved records cover some Irvine parking lots. Reloading does not
+              confirm current availability, fees or vendor permission.
+            </p>
+            <p>
+              Radius uses straight-line miles. Past-evidence ranking uses your
+              shift logs, published events, historical road counts and distance.
+              Road counts and reviews are not live customer counts.
+            </p>
+            <p>
+              Profit estimates use your inputs. Confirm truck access, parking
+              costs and host approval before booking.
+            </p>
+            <p>
+              <a href="./catalog-snapshot.json" target="_blank" rel="noopener"
+                >Saved place records ↗</a
+              >
+              ·
+              <a href="./traffic-snapshot.json" target="_blank" rel="noopener"
+                >Saved traffic measurements ↗</a
+              >
+              ·
+              <a href="./privacy.html" target="_blank" rel="noopener"
+                >Privacy & terms ↗</a
+              >
+            </p>
+          </div>
+        </section>
+      </main>
+    </div>
+    <dialog id="mapAccountDialog" aria-labelledby="mapAccountTitle">
+      <div class="dialoghead">
+        <h2 id="mapAccountTitle">Map Directions</h2>
+        <button
+          class="close"
+          id="closeMapAccount"
+          aria-label="Close map account prompt"
+        >
+          ×
+        </button>
+      </div>
+      <p id="mapAccountDescription" class="help"></p>
+      <div class="location-map-links">
+        <a id="mapAccountContinue" target="_blank" rel="noopener noreferrer"
+          >Open Directions ↗</a
+        >
+        <a id="mapAccountSignIn" target="_blank" rel="noopener noreferrer"
+          >Sign In ↗</a
+        >
+      </div>
+      <p class="help">
+        Already signed in? Choose Open Directions to use your existing Maps
+        session.
+      </p>
+    </dialog>
+    <dialog id="detailDialog" aria-label="Location details">
+      <div id="detailContent"></div>
+    </dialog>
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
