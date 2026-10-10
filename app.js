@@ -988,16 +988,19 @@ export async function initApp() {
     });
   }
   function fitMap() {
-    if (!map || state.provider !== "public") return;
+    if (!map) return;
     map.invalidateSize();
     if (!state.origin) {
       map.setView([CITY_CENTER.lat, CITY_CENTER.lon], 12);
       return;
     }
     const L = window.L;
-    const bounds = L.latLng(state.origin.lat, state.origin.lon).toBounds(
+    const bounds = L.latLngBounds();
+    const radiusBounds = L.latLng(state.origin.lat, state.origin.lon).toBounds(
       state.radius * 1609.344 * 2,
     );
+    bounds.extend([state.origin.lat, state.origin.lon]);
+    bounds.extend(radiusBounds);
     for (const place of visible) bounds.extend([place.lat, place.lon]);
     map.fitBounds(bounds, {
       padding: [45, 45],
@@ -1236,7 +1239,14 @@ export async function initApp() {
     hideSuggestions();
     save();
     render();
-    fitMap();
+    requestAnimationFrame(() => {
+      map?.invalidateSize();
+      fitMap();
+    });
+    requestAnimationFrame(() => {
+      map?.invalidateSize();
+      fitMap();
+    });
     addressStatus("Using " + origin.label + ". " + origin.precision + ".");
     refreshProvider();
     scrollToMap();
