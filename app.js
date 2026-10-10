@@ -1003,8 +1003,8 @@ export async function initApp() {
     bounds.extend(radiusBounds);
     for (const place of visible) bounds.extend([place.lat, place.lon]);
     map.fitBounds(bounds, {
-      padding: [45, 45],
-      maxZoom: 14,
+      padding: [32, 32],
+      maxZoom: 12,
       animate: false,
     });
   }
