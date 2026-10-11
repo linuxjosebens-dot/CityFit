@@ -168,7 +168,13 @@ export function loadState() {
     s.radius = [10, 15, 20, 25, 30].includes(Number(s.radius))
       ? Number(s.radius)
       : 15;
-    s.sortBy = ["history", "nearest", "traffic", "reviews"].includes(s.sortBy)
+    s.sortBy = [
+      "history",
+      "nearest",
+      "traffic",
+      "footTraffic",
+      "reviews",
+    ].includes(s.sortBy)
       ? s.sortBy
       : "history";
     s.category = Object.hasOwn(CATEGORY_NAMES, s.category) ? s.category : "all";
@@ -565,7 +571,9 @@ export async function initApp() {
           ? `Highest ${traffic.year || "published"} vehicle counts on a measured road within 0.15 mi of each venue. Missing counts sort after known counts.`
           : state.sortBy === "reviews"
             ? "Cumulative Google review counts, highest first. Reviews are engagement, not current customer traffic."
-            : "Closest first, using mapped lot-center coordinates for parking sites. Menu and service window are saved with your plan.";
+            : state.sortBy === "footTraffic"
+              ? "Highest nearby Caltrans 2025 pedestrian counts per observed hour. Survey sites must be within 0.15 mi; missing data follows measured sites, then distance. These are not live crowds or lot visitor counts."
+              : "Closest first, using mapped lot-center coordinates for parking sites. Menu and service window are saved with your plan.";
     $("cards").innerHTML = visible.length
       ? visible.map(cardHTML).join("")
       : emptyHTML();
@@ -659,20 +667,24 @@ export async function initApp() {
   function cardHTML(p) {
     const known = !!p.traffic,
       why =
-        state.sortBy === "history"
-          ? p.history.shifts
-            ? `${p.history.shifts} recorded shift${p.history.shifts === 1 ? "" : "s"} at this lot · ${p.history.ordersPerHour.toFixed(1)} orders per service hour for this menu.`
-            : p.publishedHistory?.length
-              ? "Published past food-truck event evidence. See the linked record for the lot or venue scope."
-              : known
-                ? "Ranked using historical road exposure, then distance. No recorded truck shifts at this lot."
-                : "No recorded shift, published event or nearby road-count evidence. Ranked by distance."
-          : state.sortBy === "traffic" && known
-            ? `Closest measured road: ${safe(roadName(p.traffic.name))} · ${p.traffic.distance.toFixed(2)} mi from this venue.`
-            : state.sortBy === "reviews" && Number.isFinite(p.reviewCount)
-              ? `${count(p.reviewCount)} Google Reviews returned for this place.`
-              : `Ranked #${p.rank} by distance among your matching Irvine ${p.parking ? "parking sites" : "venues"}.`;
-    return `<article class="venue-card ${p.id === selected ? "selected" : ""}" id="card-${safe(p.id)}"><div class="venue-top"><div class="venue-rank">${p.rank}</div><div><h3 class="venue-title">${safe(p.name)}</h3><div class="venue-category">${safe(CATEGORY_NAMES[p.category])}</div></div><div class="venue-distance">${p.distance.toFixed(1)} mi<small>straight-line</small></div></div><p class="venue-address">${safe(p.address || "Irvine, California · mapped venue reference")}</p><div class="venue-evidence">${p.parking ? `<span class="evidence-pill">Surface Lot · Access: ${safe(accessText(p.parking.access))}</span><span class="evidence-pill unknown">Truck Access: ${safe(accessText(p.parking.hgv))}</span>${p.history.shifts ? `<span class="evidence-pill">${p.history.shifts} shift${p.history.shifts === 1 ? "" : "s"} · ${p.history.ordersPerHour.toFixed(1)} orders/h</span>` : ""}` : ""}${known ? `<span class="evidence-pill">${count(p.traffic.count)} vehicles/day · ${p.traffic.year} Road Count</span>` : '<span class="evidence-pill unknown">No Measured Road Within 0.15 mi</span>'}${p.restroomListed ? '<span class="evidence-pill">Restroom Listed by City</span>' : ""}${Number.isFinite(p.reviewCount) ? `<span class="evidence-pill">${count(p.reviewCount)} Google Reviews${p.rating ? " · " + p.rating + "/5" : ""}</span>` : ""}${p.openNow !== null && p.openNow !== undefined ? `<span class="evidence-pill">${p.openNow ? "Open Now" : "Closed Now"} · Provider Status</span>` : ""}${state.approvals[p.id]?.status === "confirmed" ? '<span class="evidence-pill">Your Approval Recorded</span>' : ""}</div><p class="venue-why">${why}</p>${parkingEvidenceHTML(p)}${locationMapLinks(p)}<div class="venue-actions"><button class="btn" data-plan="${safe(p.id)}">Plan This Shift →</button><button class="textbtn" data-detail="${safe(p.id)}">Why This Place ↗</button><button class="iconbtn ${state.saved.includes(p.id) ? "saved" : ""}" data-save="${safe(p.id)}" aria-label="${state.saved.includes(p.id) ? "Unsave" : "Save"} ${safe(p.name)}" aria-pressed="${state.saved.includes(p.id)}">${state.saved.includes(p.id) ? "★" : "☆"}</button></div><div class="venue-source">${p.sourceId === "google" ? '<span class="google-attribution" translate="no">Google Maps</span>' : safe(p.source)}<span>· Retrieved ${dateText(p.fetchedAt)}</span>${p.sourceURL ? `<a href="${safe(p.sourceURL)}" target="_blank" rel="noopener">Source ↗</a>` : ""}${(p.attributions || []).map((a) => (a.uri ? `<a href="${safe(a.uri)}" target="_blank" rel="noopener">${safe(a.name)}</a>` : "")).join("")}</div></article>`;
+        state.sortBy === "footTraffic"
+          ? p.footTraffic
+            ? "Ranked by nearby measured pedestrians per observed hour (2025)."
+            : "No nearby pedestrian measurements; follows measured sites, then distance."
+          : state.sortBy === "history"
+            ? p.history.shifts
+              ? `${p.history.shifts} recorded shift${p.history.shifts === 1 ? "" : "s"} at this lot · ${p.history.ordersPerHour.toFixed(1)} orders per service hour for this menu.`
+              : p.publishedHistory?.length
+                ? "Published past food-truck event evidence. See the linked record for the lot or venue scope."
+                : known
+                  ? "Ranked using historical road exposure, then distance. No recorded truck shifts at this lot."
+                  : "No recorded shift, published event or nearby road-count evidence. Ranked by distance."
+            : state.sortBy === "traffic" && known
+              ? `Closest measured road: ${safe(roadName(p.traffic.name))} · ${p.traffic.distance.toFixed(2)} mi from this venue.`
+              : state.sortBy === "reviews" && Number.isFinite(p.reviewCount)
+                ? `${count(p.reviewCount)} Google Reviews returned for this place.`
+                : `Ranked #${p.rank} by distance among your matching Irvine ${p.parking ? "parking sites" : "venues"}.`;
+    return `<article class="venue-card ${p.id === selected ? "selected" : ""}" id="card-${safe(p.id)}"><div class="venue-top"><div class="venue-rank">${p.rank}</div><div><h3 class="venue-title">${safe(p.name)}</h3><div class="venue-category">${safe(CATEGORY_NAMES[p.category])}</div></div><div class="venue-distance">${p.distance.toFixed(1)} mi<small>straight-line</small></div></div><p class="venue-address">${safe(p.address || "Irvine, California · mapped venue reference")}</p><div class="venue-evidence">${p.parking ? `<span class="evidence-pill">Surface Lot · Access: ${safe(accessText(p.parking.access))}</span><span class="evidence-pill unknown">Truck Access: ${safe(accessText(p.parking.hgv))}</span>${p.history.shifts ? `<span class="evidence-pill">${p.history.shifts} shift${p.history.shifts === 1 ? "" : "s"} · ${p.history.ordersPerHour.toFixed(1)} orders/h</span>` : ""}` : ""}${known ? `<span class="evidence-pill">${count(p.traffic.count)} vehicles/day · ${p.traffic.year} Road Count</span>` : '<span class="evidence-pill unknown">No Measured Road Within 0.15 mi</span>'}${p.restroomListed ? '<span class="evidence-pill">Restroom Listed by City</span>' : ""}${Number.isFinite(p.reviewCount) ? `<span class="evidence-pill">${count(p.reviewCount)} Google Reviews${p.rating ? " · " + p.rating + "/5" : ""}</span>` : ""}${p.openNow !== null && p.openNow !== undefined ? `<span class="evidence-pill">${p.openNow ? "Open Now" : "Closed Now"} · Provider Status</span>` : ""}${state.approvals[p.id]?.status === "confirmed" ? '<span class="evidence-pill">Your Approval Recorded</span>' : ""}</div><p class="venue-why">${why}</p>${parkingEvidenceHTML(p)}<p class="help">${p.footTraffic ? `Foot traffic: ${p.footTraffic.count.toFixed(1)} pedestrians per observed hour · Caltrans 2025 · Site ${safe(p.footTraffic.id)}, ${p.footTraffic.distance.toFixed(2)} mi away · ${safe(p.footTraffic.start)} to ${safe(p.footTraffic.end)} · ${p.footTraffic.observedHours} observed hours. Nearby survey count; not lot visitors or live crowds. <a href="${safe(p.footTraffic.sourceURL)}" target="_blank" rel="noopener">Source ↗</a>` : "Foot traffic: No data within 0.15 mi."}</p>${locationMapLinks(p)}<div class="venue-actions"><button class="btn" data-plan="${safe(p.id)}">Plan This Shift →</button><button class="textbtn" data-detail="${safe(p.id)}">Why This Place ↗</button><button class="iconbtn ${state.saved.includes(p.id) ? "saved" : ""}" data-save="${safe(p.id)}" aria-label="${state.saved.includes(p.id) ? "Unsave" : "Save"} ${safe(p.name)}" aria-pressed="${state.saved.includes(p.id)}">${state.saved.includes(p.id) ? "★" : "☆"}</button></div><div class="venue-source">${p.sourceId === "google" ? '<span class="google-attribution" translate="no">Google Maps</span>' : safe(p.source)}<span>· Retrieved ${dateText(p.fetchedAt)}</span>${p.sourceURL ? `<a href="${safe(p.sourceURL)}" target="_blank" rel="noopener">Source ↗</a>` : ""}${(p.attributions || []).map((a) => (a.uri ? `<a href="${safe(a.uri)}" target="_blank" rel="noopener">${safe(a.name)}</a>` : "")).join("")}</div></article>`;
   }
   function parkingEvidenceHTML(p) {
     if (!p.parking) return "";
@@ -1347,7 +1359,7 @@ export async function initApp() {
   }
   function syncSort() {
     $("sortAreas").innerHTML =
-      `<option value="history">Past shift & event evidence</option><option value="nearest">Closest first</option><option value="traffic">Measured road traffic · historical</option><option value="reviews" ${state.provider === "google" ? "" : "disabled"}>Google review count</option>`;
+      `<option value="history">Past shift & event evidence</option><option value="nearest">Closest first</option><option value="traffic">Measured road traffic · historical</option><option value="footTraffic">Measured foot traffic · 2025</option><option value="reviews" ${state.provider === "google" ? "" : "disabled"}>Google review count</option>`;
     if (state.sortBy === "reviews" && state.provider !== "google")
       state.sortBy = "nearest";
     $("sortAreas").value = state.sortBy;
