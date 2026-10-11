@@ -111,7 +111,32 @@ try {
     await page.route("https://overpass-api.de/**", (route) =>
       route.fulfill({ json: { elements: [] } }),
     );
-    await page.goto(base);
+    await page.goto(
+      new URL("./intro.html", base.endsWith("/") ? base : base + "/").href,
+    );
+    await page.locator("#openLogin").click();
+    assert.equal(await page.locator("#authDialog").isVisible(), true);
+    assert.equal(await page.locator("#googleLogin").isDisabled(), true);
+    await page.locator("#signUpTab").click();
+    assert.equal(
+      await page.locator("#emailLogin").textContent(),
+      "Create account",
+    );
+    await page.locator("#closeLogin").click();
+    assert.equal(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+      true,
+    );
+    await page.screenshot({
+      path: new URL(`./artifacts/intro-${viewport.width}.png`, import.meta.url)
+        .pathname,
+      fullPage: true,
+    });
+    await page.goto(
+      new URL("./index.html", base.endsWith("/") ? base : base + "/").href,
+    );
     await page.waitForFunction(() =>
       document.getElementById("catalogStamp").textContent.includes("Snapshot"),
     );
