@@ -12,7 +12,8 @@
     "test:browser": "node browser-smoke.mjs",
     "test:profile": "node account-browser.mjs",
     "test:theme": "node theme-browser.mjs",
-    "format:check": "prettier --check app.js theme.js theme.css intro.js account.js firebase-client.js account-browser.mjs auth-config.js intro.html intro.css shift-plan-pdf.js index.html styles.css location-core.js parking-core.js parking-history.js business-data.js server.mjs privacy.html *.test.mjs browser-smoke.mjs theme-browser.mjs"
+    "format:check": "prettier --check app.js theme.js theme.css intro.js account.js firebase-client.js account-browser.mjs auth-config.js intro.html intro.css shift-plan-pdf.js index.html styles.css location-core.js parking-core.js parking-history.js business-data.js server.mjs privacy.html *.test.mjs browser-smoke.mjs theme-browser.mjs live-places.mjs provider-config.js live-provider-browser.mjs",
+    "test:providers": "node live-provider-browser.mjs"
   },
   "devDependencies": {
     "playwright": "1.64.0",

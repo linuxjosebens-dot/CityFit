@@ -119,3 +119,46 @@ test("server serves public assets, correct errors, and blocks private files and 
     await new Promise((resolve) => server.close(resolve));
   }
 });
+
+test("live provider endpoints allow the configured Pages origin and keep credentials server-side", async () => {
+  const previousOrigin = process.env.CITYFIT_ALLOWED_ORIGIN;
+  const previousKey = process.env.GOOGLE_MAPS_API_KEY;
+  process.env.CITYFIT_ALLOWED_ORIGIN = "https://linuxjosebens-dot.github.io";
+  delete process.env.GOOGLE_MAPS_API_KEY;
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const base = `http://127.0.0.1:${server.address().port}`;
+  try {
+    const status = await fetch(base + "/api/location/status", {
+      headers: { Origin: process.env.CITYFIT_ALLOWED_ORIGIN },
+    });
+    assert.equal(status.status, 200);
+    assert.equal(
+      status.headers.get("access-control-allow-origin"),
+      process.env.CITYFIT_ALLOWED_ORIGIN,
+    );
+    assert.equal(status.headers.get("cache-control"), "no-store");
+    const search = await fetch(
+      base +
+        "/api/location/places?provider=google&lat=33.68&lon=-117.82&radius=15",
+      { headers: { Origin: process.env.CITYFIT_ALLOWED_ORIGIN } },
+    );
+    assert.equal(search.status, 503);
+    assert.match((await search.json()).error, /credentials/);
+    assert.equal((await fetch(base + "/live-places.mjs")).status, 404);
+    assert.equal((await fetch(base + "/provider-config.js")).status, 200);
+    assert.equal(
+      (
+        await fetch(base + "/api/location/status", {
+          headers: { Origin: "https://untrusted.example" },
+        })
+      ).status,
+      403,
+    );
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+    if (previousOrigin === undefined) delete process.env.CITYFIT_ALLOWED_ORIGIN;
+    else process.env.CITYFIT_ALLOWED_ORIGIN = previousOrigin;
+    if (previousKey === undefined) delete process.env.GOOGLE_MAPS_API_KEY;
+    else process.env.GOOGLE_MAPS_API_KEY = previousKey;
+  }
+});

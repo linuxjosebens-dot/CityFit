@@ -1,3 +1,4 @@
+import { livePlaces, providerStatus } from "./live-places.mjs";
 import { estimateParking } from "./parking-price.mjs";
 import { parkingPlaces, parkingFeeInfo } from "./parking-core.js";
 import http from "node:http";
@@ -8,6 +9,7 @@ const root = fileURLToPath(new URL(".", import.meta.url));
 const cache = new Map();
 const publicFiles = new Set([
   "index.html",
+  "provider-config.js",
   "intro.html",
   "intro.css",
   "intro.js",
@@ -176,6 +178,7 @@ export async function fuelPrices(url) {
   cache.set(key, { time: Date.now(), body });
   return { status: 200, body };
 }
+const placeRequests = new Map();
 export const server = http.createServer(async (req, res) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
@@ -194,7 +197,19 @@ export const server = http.createServer(async (req, res) => {
       return;
     }
     const url = new URL(req.url, "http://localhost");
+    const allowedOrigin = process.env.CITYFIT_ALLOWED_ORIGIN;
+    const externalAllowed =
+      allowedOrigin &&
+      req.headers.origin === allowedOrigin &&
+      new URL(req.url, "http://localhost").pathname.startsWith(
+        "/api/location/",
+      );
+    if (externalAllowed) {
+      res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
+      res.setHeader("Vary", "Origin");
+    }
     if (
+      !externalAllowed &&
       req.headers.origin &&
       req.headers.origin !== `http://${req.headers.host}` &&
       req.headers.origin !== `https://${req.headers.host}`
@@ -284,14 +299,34 @@ export const server = http.createServer(async (req, res) => {
       res.end(req.method === "HEAD" ? undefined : body);
       return;
     }
+    if (url.pathname === "/api/location/places") {
+      if (req.method === "HEAD") {
+        json(200, {});
+        return;
+      }
+      const key = req.socket.remoteAddress;
+      const now = Date.now();
+      if (placeRequests.size > 10000) placeRequests.clear();
+      let limit = placeRequests.get(key);
+      if (!limit || now - limit.start > 60000) {
+        limit = { start: now, count: 0 };
+        placeRequests.set(key, limit);
+      }
+      if (++limit.count > 30) {
+        json(429, {
+          error: "Too many place searches. Wait a minute and retry.",
+        });
+        return;
+      }
+      const result = await livePlaces(url);
+      json(result.status, result.body);
+      return;
+    }
     if (url.pathname === "/api/location/status") {
       json(200, {
         city: true,
         osm: true,
-        google: false,
-        apple: false,
-        googleRoutes: false,
-        appleRoutes: false,
+        ...providerStatus(),
         fuelPrices: !!process.env.HERE_API_KEY,
       });
       return;
@@ -342,7 +377,10 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     );
     process.exitCode = 1;
   });
-  server.listen(Number(process.env.PORT) || 8080, "127.0.0.1", () =>
-    console.log("CityFit: http://localhost:" + (process.env.PORT || 8080)),
+  server.listen(
+    Number(process.env.PORT) || 8080,
+    process.env.HOST || "127.0.0.1",
+    () =>
+      console.log("CityFit: http://localhost:" + (process.env.PORT || 8080)),
   );
 }

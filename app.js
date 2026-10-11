@@ -1,3 +1,4 @@
+import { providerApiBase } from "./provider-config.js";
 import { createShiftPlanPDF } from "./shift-plan-pdf.js";
 import { parkingPlaces } from "./parking-core.js";
 import {
@@ -358,6 +359,9 @@ export async function resolveCurrentLocation({
 export async function initApp() {
   const $ = (id) => document.getElementById(id);
   const staticHosting = location.hostname.endsWith(".github.io");
+  const liveApiBase = providerApiBase.replace(/\/$/, "");
+  const liveApiConfigured = !staticHosting || Boolean(liveApiBase);
+  const providerURL = (path) => (liveApiBase ? `${liveApiBase}${path}` : path);
   let state = loadState(),
     catalog = { places: [], status: "loading" },
     traffic = { segments: [], status: "loading" },
@@ -494,12 +498,12 @@ export async function initApp() {
       [
         "Google Maps",
         providers.google,
-        "Place reviews, opening status and traffic-aware driving time.",
+        "Live parking-place search, ratings, review counts and reported opening status.",
       ],
       [
         "Apple Maps",
         providers.apple,
-        "Place search and driving-route duration.",
+        "Live parking-place search and addresses. Ratings and opening status are not provided.",
       ],
     ]
       .map(([name, connected, desc]) => {
@@ -1323,7 +1327,10 @@ export async function initApp() {
           lon: origin.lon,
           radius,
         }),
-        data = await fetchJSON("/api/location/places?" + q, controller.signal);
+        data = await fetchJSON(
+          providerURL("/api/location/places?" + q),
+          controller.signal,
+        );
       if (version !== providerVersion) return;
       providerPlaces = data;
       render();
@@ -1340,7 +1347,8 @@ export async function initApp() {
   }
   async function loadProviders() {
     try {
-      if (!staticHosting) providers = await fetchJSON("/api/location/status");
+      if (liveApiConfigured)
+        providers = await fetchJSON(providerURL("/api/location/status"));
     } catch {}
     $("placeProvider").innerHTML =
       `<option value="public">Mapped surface parking</option><option value="google" ${providers.google ? "" : "disabled"}>Google Maps${providers.google ? "" : " · not connected"}</option><option value="apple" ${providers.apple ? "" : "disabled"}>Apple Maps${providers.apple ? "" : " · not connected"}</option>`;
