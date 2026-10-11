@@ -42,7 +42,8 @@ try {
     await page.goto(base + "/index.html");
     await page.waitForFunction(
       () =>
-        document.getElementById("profileButton").textContent === "Alice Chen",
+        document.getElementById("profileButtonName").textContent ===
+        "Alice Chen",
     );
     await page.locator("#profileButton").click();
     assert.equal(
@@ -63,7 +64,49 @@ try {
     );
     const bounds = await page.locator("#profileDialog").boundingBox();
     assert.ok(Math.abs(bounds.x + bounds.width - width) < 2);
+    assert.equal(
+      await page.locator("#profileButton").getAttribute("aria-expanded"),
+      "true",
+    );
+    const taco = page.getByRole("radio", { name: "Taco trail" });
+    await taco.check();
+    await page.waitForFunction(
+      () => document.querySelector("#profilePhoto").naturalWidth > 0,
+    );
+    assert.match(
+      await page.locator("#toolbarAvatar").getAttribute("src"),
+      /truck-taco/,
+    );
+    await taco.focus();
+    await page.keyboard.press("ArrowRight");
+    assert.equal(
+      await page.getByRole("radio", { name: "Coffee cruiser" }).isChecked(),
+      true,
+    );
+    assert.equal(
+      await page.evaluate(() =>
+        localStorage.getItem("cityfit-avatar-v1:alice"),
+      ),
+      "coffee",
+    );
     await page.keyboard.press("Escape");
+    await page.waitForFunction(
+      () =>
+        document
+          .querySelector("#profileButton")
+          .getAttribute("aria-expanded") === "false",
+    );
+    assert.equal(
+      await page.locator("#profileButton").getAttribute("aria-expanded"),
+      "false",
+    );
+    assert.equal(
+      await page
+        .locator("#profileButton")
+        .evaluate((el) => document.activeElement === el),
+      true,
+    );
+
     await page.locator("#exampleOrigin").click();
     await page.locator("[data-save]").first().click();
     await page.locator("#profileButton").click();
@@ -87,10 +130,15 @@ try {
     await page.reload();
     await page.waitForFunction(
       () =>
-        document.querySelector("#profileButton").textContent === "Alice Chen",
+        document.querySelector("#profileButtonName").textContent ===
+        "Alice Chen",
     );
     assert.equal(await page.locator("#data").isVisible(), true);
     await page.locator("#profileButton").click();
+    assert.equal(
+      await page.getByRole("radio", { name: "Coffee cruiser" }).isChecked(),
+      true,
+    );
 
     await page.locator("#lightModeToggle").uncheck();
     assert.equal(await page.locator("html").getAttribute("data-theme"), "dark");
@@ -125,7 +173,8 @@ try {
     await page.goto(base + "/index.html");
     await page.waitForFunction(
       () =>
-        document.getElementById("profileButton").textContent === "Alice Chen",
+        document.getElementById("profileButtonName").textContent ===
+        "Alice Chen",
     );
     await page.locator("#profileButton").click();
     assert.equal(await page.locator("#lightModeToggle").isChecked(), false);
@@ -139,7 +188,25 @@ try {
       () => document.getElementById("profileName").textContent === "Guest",
     );
     assert.equal(await page.locator("#profileGuest").isVisible(), true);
-    assert.equal(await page.locator("#lightModeToggle").isVisible(), false);
+    assert.equal(
+      await page.getByRole("radio", { name: "Account avatar" }).isChecked(),
+      true,
+    );
+    await page.getByRole("radio", { name: "Sweet wheels" }).check();
+    assert.equal(
+      await page.evaluate(() =>
+        localStorage.getItem("cityfit-avatar-v1:guest"),
+      ),
+      "sweets",
+    );
+    assert.equal(
+      await page.evaluate(() =>
+        localStorage.getItem("cityfit-avatar-v1:alice"),
+      ),
+      "coffee",
+    );
+
+    assert.equal(await page.locator("#lightModeToggle").isVisible(), true);
     assert.equal(await page.locator("#profileSavedCount").textContent(), "1");
     assert.equal(
       JSON.parse(

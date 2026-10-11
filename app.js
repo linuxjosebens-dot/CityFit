@@ -15,7 +15,7 @@ import {
   dedupePlaces,
 } from "./location-core.js";
 import { PERMITS, LEGACY_AREAS } from "./business-data.js";
-import { initializeAccount } from "./account.js";
+import { initializeAccount } from "./account.js?v=20261011-avatars";
 
 const STORAGE = "city-fit-irvine-v1";
 const DEFAULT = {
@@ -1745,8 +1745,13 @@ export async function initApp() {
       view(link.dataset.openView);
     };
   });
-  window.addEventListener("hashchange", () => view(location.hash.slice(1)));
-  if (viewIds.has(location.hash.slice(1))) view(location.hash.slice(1));
+  function openLinkedSection() {
+    if (location.hash === "#profile") {
+      if (!$("profileDialog").open) $("profileButton").click();
+    } else view(location.hash.slice(1));
+  }
+  window.addEventListener("hashchange", openLinkedSection);
+  openLinkedSection();
   $("heroPlan").onclick = $("sidePlan").onclick = () => view("planner");
   $("changePermitLocation").onclick = () => {
     view("planner");

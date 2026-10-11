@@ -2899,3 +2899,86 @@ a.mobilebrand {
     padding: 16px;
   }
 }
+
+#profileButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+}
+#profileButtonName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#toolbarAvatar {
+  flex-shrink: 0;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.avatar-picker {
+  min-width: 0;
+  padding: 0;
+  margin: 24px 0;
+  border: 0;
+}
+.avatar-picker legend {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.avatar-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.avatar-option {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 14px 8px;
+  margin: 0;
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 12px;
+  text-align: center;
+}
+.avatar-option input {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+.avatar-option:has(input:checked) {
+  border-color: var(--teal);
+  background: var(--range);
+}
+.avatar-option:focus-within {
+  outline: 3px solid var(--teal);
+  outline-offset: 3px;
+}
+.avatar-option img,
+.avatar-default {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+}
+.avatar-default {
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+  color: var(--teal);
+  font-size: 32px;
+}
+#closeProfile {
+  min-width: 44px;
+  min-height: 44px;
+}
+#profileDialog {
+  overscroll-behavior: contain;
+}

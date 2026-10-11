@@ -112,6 +112,17 @@ try {
       }
 
       await page.locator("[data-view='locations']").click();
+      await page.locator("#profileButton").click();
+      await page.getByRole("radio", { name: "Taco trail" }).check();
+      await check([
+        ".avatar-picker legend",
+        ".avatar-option",
+        ".avatar-default",
+        "#avatarHelp",
+        "#avatarStatus",
+        ".theme-control label",
+      ]);
+      await page.locator("#closeProfile").click();
       await page.goto(base + "/intro.html");
       await check([
         ".wordmark",
@@ -119,6 +130,8 @@ try {
         ".preview-tag",
         ".preview-arrow",
         ".closing .button",
+        ".truck-gallery-card strong",
+        ".truck-gallery-card small",
       ]);
       await page.locator("#openLogin").click();
       await check(["#authDialog label", ".auth-description", "#authStatus"]);

@@ -12,7 +12,7 @@
     <link rel="icon" href="./favicon.svg" />
     <link rel="stylesheet" href="./vendor/leaflet.css" />
     <script src="./theme.js"></script>
-    <link rel="stylesheet" href="./styles.css?v=20261011-record-links" />
+    <link rel="stylesheet" href="./styles.css?v=20261011-avatars" />
     <link rel="stylesheet" href="./theme.css?v=20261011-contrast" />
     <script defer src="./vendor/leaflet.js"></script>
   </head>
@@ -59,8 +59,16 @@
           Irvine / <strong id="crumb">Location Research</strong>
         </div>
         <div class="account-toolbar">
-          <button class="btn secondary" id="profileButton" type="button">
-            Profile
+          <button
+            class="btn secondary"
+            id="profileButton"
+            type="button"
+            aria-haspopup="dialog"
+            aria-controls="profileDialog"
+            aria-expanded="false"
+          >
+            <img id="toolbarAvatar" width="28" height="28" alt="" hidden />
+            <span id="profileButtonName">Profile</span>
           </button>
         </div>
       </header>
@@ -779,7 +787,7 @@
       >
     </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
-    <script type="module" src="./app.js?v=20261011-record-links"></script>
+    <script type="module" src="./app.js?v=20261011-avatars"></script>
     <dialog id="profileDialog" aria-labelledby="profileTitle">
       <div class="dialoghead">
         <h2 id="profileTitle">Your profile</h2>
@@ -820,20 +828,71 @@
           <dt>Member since</dt>
           <dd id="profileCreated"></dd>
         </dl>
-        <div class="theme-control">
-          <label for="lightModeToggle">Light mode</label
-          ><input
-            id="lightModeToggle"
-            type="checkbox"
-            role="switch"
-            data-light-mode
-            checked
-          /><span id="themeStatus" role="status" class="help" hidden></span>
-        </div>
         <button id="signOutAccount" type="button" class="btn outline">
           Sign out
         </button>
       </div>
+      <div class="theme-control">
+        <label for="lightModeToggle">Light mode</label
+        ><input
+          id="lightModeToggle"
+          type="checkbox"
+          role="switch"
+          data-light-mode
+          checked
+        /><span id="themeStatus" role="status" class="help" hidden></span>
+      </div>
+
+      <fieldset class="avatar-picker" aria-describedby="avatarHelp">
+        <legend>Choose your avatar</legend>
+        <p class="help" id="avatarHelp">
+          Use Tab to reach the options and arrow keys to choose. Saved in this
+          browser for this profile.
+        </p>
+        <div class="avatar-options">
+          <label class="avatar-option"
+            ><input
+              type="radio"
+              name="truckAvatar"
+              value="default"
+              checked
+            /><span
+              class="avatar-default"
+              id="avatarDefaultInitial"
+              aria-hidden="true"
+              >G</span
+            ><span>Account avatar</span></label
+          >
+          <label class="avatar-option"
+            ><input type="radio" name="truckAvatar" value="taco" /><img
+              src="./assets/truck-taco.png"
+              width="80"
+              height="80"
+              alt=""
+              loading="lazy"
+            /><span>Taco trail</span></label
+          >
+          <label class="avatar-option"
+            ><input type="radio" name="truckAvatar" value="coffee" /><img
+              src="./assets/truck-coffee.png"
+              width="80"
+              height="80"
+              alt=""
+              loading="lazy"
+            /><span>Coffee cruiser</span></label
+          >
+          <label class="avatar-option"
+            ><input type="radio" name="truckAvatar" value="sweets" /><img
+              src="./assets/truck-sweets.png"
+              width="80"
+              height="80"
+              alt=""
+              loading="lazy"
+            /><span>Sweet wheels</span></label
+          >
+        </div>
+        <p class="help" id="avatarStatus" role="status" aria-live="polite"></p>
+      </fieldset>
       <nav class="profile-actions" aria-label="Account shortcuts">
         <a class="btn secondary" href="#planner" data-open-view="planner"
           >My planner →</a
