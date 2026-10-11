@@ -19,6 +19,12 @@ try {
     });
     const page = await context.newPage(),
       errors = [];
+    await page.route("**/auth-config.js", (route) =>
+      route.fulfill({
+        contentType: "text/javascript",
+        body: "export const firebaseConfig = {};",
+      }),
+    );
     await page.route("**/api/parking-fee?**", (route) => {
       const url = new URL(route.request().url());
       return route.fulfill({

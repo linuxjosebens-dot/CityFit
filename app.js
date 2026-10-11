@@ -15,6 +15,7 @@ import {
   dedupePlaces,
 } from "./location-core.js";
 import { PERMITS, LEGACY_AREAS } from "./business-data.js";
+import { initializeAccount } from "./account.js";
 
 const STORAGE = "city-fit-irvine-v1";
 const DEFAULT = {
@@ -282,6 +283,7 @@ export async function initApp() {
     routeVersion = 0,
     detailReturnId = null,
     storageWarningShown = false;
+  initializeAccount();
   const allPlaces = () =>
     state.provider === "public"
       ? parkingPlaces(parking, catalog.places, boundary, parking.fetchedAt)
@@ -305,7 +307,12 @@ export async function initApp() {
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => ($("toast").hidden = true), 3500);
   }
+  function updateProfileStats() {
+    $("profileSavedCount").textContent = state.saved.length;
+    $("profileShiftCount").textContent = state.logs.length;
+  }
   function save() {
+    updateProfileStats();
     try {
       localStorage.setItem(STORAGE, JSON.stringify(state));
     } catch {
@@ -1753,6 +1760,7 @@ export async function initApp() {
   fitMap();
   await Promise.allSettled([loadProviders(), refreshPublicSources()]);
   fitMap();
+  updateProfileStats();
   return {
     getState: () => structuredClone(state),
     getVisible: () => structuredClone(visible),

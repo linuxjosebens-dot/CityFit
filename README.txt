@@ -40,6 +40,8 @@ the local server; provider map links work independently.
 
 Saved data
 Preferences, checklist progress and shift logs stay in browser storage.
+Firebase sign-in shows your profile in the top-right panel and supports sign-out.
+Records are not uploaded or separated by account. No Firestore setup is needed.
 Older TruckFit saved data is read for migration. Download PDF/CSV copies.
 See privacy.html for data sharing details.
 

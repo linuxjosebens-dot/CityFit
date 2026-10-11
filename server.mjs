@@ -12,6 +12,8 @@ const publicFiles = new Set([
   "intro.css",
   "intro.js",
   "auth-config.js",
+  "firebase-client.js",
+  "account.js",
   "privacy.html",
   "favicon.svg",
   "styles.css",

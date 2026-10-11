@@ -19,7 +19,7 @@
     <aside class="sidebar">
       <a
         class="brand"
-        href="https://linuxjosebens-dot.github.io/CityFit/intro.html"
+        href="./intro.html"
         aria-label="CityFit Irvine — Back to introduction"
       >
         City<span>Fit</span>
@@ -41,6 +41,7 @@
         <button class="btn outline" id="sidePlan">Plan A Shift →</button>
       </div>
       <div class="sidefoot">
+        <a href="./intro.html">Account / Sign in →</a><br /><br />
         Irvine, California<br />Places, Routes & Shift Planning<br /><br />Preferences
         and logs save in this browser.
       </div>
@@ -49,14 +50,18 @@
       <header class="topbar">
         <a
           class="mobilebrand"
-          href="https://linuxjosebens-dot.github.io/CityFit/intro.html"
+          href="./intro.html"
           aria-label="CityFit Irvine — Back to introduction"
           >CityFit Irvine</a
         >
         <div class="crumb">
           Irvine / <strong id="crumb">Location Research</strong>
         </div>
-        <span class="badge blue">Irvine Only · Food Trucks</span>
+        <div class="account-toolbar">
+          <button class="btn secondary" id="profileButton" type="button">
+            Profile
+          </button>
+        </div>
       </header>
       <main class="content" id="mainContent" tabindex="-1">
         <section id="locations" class="view">
@@ -726,5 +731,56 @@
     </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
     <script type="module" src="./app.js"></script>
+    <dialog id="profileDialog" aria-labelledby="profileTitle">
+      <div class="dialoghead">
+        <h2 id="profileTitle">Your profile</h2>
+        <button
+          id="closeProfile"
+          type="button"
+          class="close"
+          aria-label="Close profile"
+        >
+          ×
+        </button>
+      </div>
+      <div class="profile-identity">
+        <div class="profile-avatar">
+          <span id="profileInitial" aria-hidden="true">G</span
+          ><img id="profilePhoto" alt="" hidden referrerpolicy="no-referrer" />
+        </div>
+        <div>
+          <strong id="profileName">Guest</strong>
+          <p id="accountEmail" class="help"></p>
+        </div>
+      </div>
+      <p id="profileStatus" role="status" aria-live="polite">
+        Checking sign-in…
+      </p>
+      <div id="profileGuest" hidden>
+        <p>Sign in with your existing Firebase account.</p>
+        <a class="btn dark" href="./intro.html">Sign in / Create account →</a>
+      </div>
+      <div id="profileMember" hidden>
+        <dl class="profile-details">
+          <dt>Sign-in method</dt>
+          <dd id="accountProvider"></dd>
+          <dt>Email status</dt>
+          <dd id="profileVerified"></dd>
+          <dt>Member since</dt>
+          <dd id="profileCreated"></dd>
+        </dl>
+        <button id="signOutAccount" type="button" class="btn outline">
+          Sign out
+        </button>
+      </div>
+      <div class="profile-counts">
+        <span><strong id="profileSavedCount">0</strong> saved locations</span
+        ><span><strong id="profileShiftCount">0</strong> recorded shifts</span>
+      </div>
+      <p class="help">
+        Your planner records stay in this browser. Signing out keeps them here.
+      </p>
+      <a class="textbtn" href="./privacy.html">Privacy & terms →</a>
+    </dialog>
   </body>
 </html>
