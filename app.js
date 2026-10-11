@@ -322,7 +322,8 @@ export async function initApp() {
     geolocationVersion = 0,
     routeVersion = 0,
     detailReturnId = null,
-    storageWarningShown = false;
+    storageWarningShown = false,
+    serviceRangeDrag = null;
   initializeAccount();
   const allPlaces = () =>
     state.provider === "public"
@@ -350,6 +351,88 @@ export async function initApp() {
   function updateProfileStats() {
     $("profileSavedCount").textContent = state.saved.length;
     $("profileShiftCount").textContent = state.logs.length;
+  }
+  function updateServiceRange(startIso, endIso) {
+    const nextStart = startIso || "";
+    const nextEnd = endIso || "";
+    state.serviceStartDate = nextStart;
+    state.serviceEndDate = nextEnd;
+    state.serviceSelectedDates = nextStart && nextEnd
+      ? datesBetween(nextStart, nextEnd)
+      : nextStart
+        ? [nextStart]
+        : [];
+    save();
+    const startInput = $("serviceStartDate");
+    const endInput = $("serviceEndDate");
+    if (startInput) startInput.value = nextStart;
+    if (endInput) endInput.value = nextEnd;
+    renderServiceDatePicker();
+  }
+  function renderServiceDatePicker() {
+    const picker = $("serviceDatePicker");
+    if (!picker) return;
+    const today = new Date();
+    const monthAnchor = state.serviceStartDate
+      ? new Date(`${state.serviceStartDate}T12:00:00`)
+      : new Date(today.getFullYear(), today.getMonth(), 1);
+    const monthDate = new Date(
+      monthAnchor.getFullYear(),
+      monthAnchor.getMonth(),
+      1,
+    );
+    const monthLabel = monthDate.toLocaleDateString("en-US", {
+      month: "long",
+      year: "numeric",
+    });
+    const firstWeekday = monthDate.getDay();
+    const daysInMonth = new Date(
+      monthDate.getFullYear(),
+      monthDate.getMonth() + 1,
+      0,
+    ).getDate();
+    const selectedSet = new Set(state.serviceSelectedDates);
+    const startDate = state.serviceStartDate || "";
+    const endDate = state.serviceEndDate || "";
+    const cells = [];
+    for (let i = 0; i < firstWeekday; i += 1) cells.push('<span class="empty-day"></span>');
+    for (let day = 1; day <= daysInMonth; day += 1) {
+      const iso = toISODate(new Date(monthDate.getFullYear(), monthDate.getMonth(), day));
+      const isSelected = selectedSet.has(iso);
+      const isRangeStart = iso === startDate;
+      const isRangeEnd = iso === endDate;
+      const isInRange = !!startDate && !!endDate && isSelected;
+      cells.push(
+        `<button type="button" class="calendar-day ${isSelected ? "selected" : ""} ${isRangeStart ? "range-start" : ""} ${isRangeEnd ? "range-end" : ""} ${isInRange ? "in-range" : ""}" data-date="${iso}" aria-label="${iso}">${day}</button>`,
+      );
+    }
+    picker.innerHTML = `
+      <div class="calendar-header">
+        <strong>${monthLabel}</strong>
+      </div>
+      <div class="calendar-weekdays"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+      <div class="calendar-grid">${cells.join("")}</div>
+    `;
+    picker.querySelectorAll("[data-date]").forEach((button) => {
+      button.addEventListener("pointerdown", (event) => {
+        const date = button.dataset.date;
+        if (!date) return;
+        event.preventDefault();
+        if (!state.serviceStartDate || (state.serviceStartDate && state.serviceEndDate)) {
+          updateServiceRange(date, date);
+          serviceRangeDrag = date;
+          return;
+        }
+        updateServiceRange(state.serviceStartDate, date);
+        serviceRangeDrag = date;
+      });
+      button.addEventListener("pointerenter", () => {
+        if (!serviceRangeDrag) return;
+        const currentDate = button.dataset.date;
+        if (!currentDate) return;
+        updateServiceRange(serviceRangeDrag, currentDate);
+      });
+    });
   }
   function save() {
     updateProfileStats();
