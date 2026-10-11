@@ -523,6 +523,7 @@ try {
     });
     const login = new URL(await googleSignIn.getAttribute("href"));
     assert.equal(login.origin, "https://accounts.google.com");
+    assert.equal(login.pathname, "/AccountChooser");
     assert.equal(
       login.searchParams.get("continue"),
       "https://www.google.com/maps",

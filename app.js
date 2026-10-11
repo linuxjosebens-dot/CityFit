@@ -465,7 +465,7 @@ export async function initApp() {
       .map(([name, connected, desc]) => {
         const google = name === "Google Maps";
         const apple = name === "Apple Maps";
-        const login = new URL("https://accounts.google.com/ServiceLogin");
+        const login = new URL("https://accounts.google.com/AccountChooser");
         login.searchParams.set("continue", "https://www.google.com/maps");
         const actions = google
           ? `<div class="location-map-links"><a href="${safe(login.href)}" target="_blank" rel="noopener noreferrer">Sign in to Google Maps ↗</a><a href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer">Open Google Maps ↗</a></div><p class="help">Sign in on Google to use your saved places. CityFit cannot check your Google Maps sign-in.</p>`
@@ -606,7 +606,7 @@ export async function initApp() {
     $("mapAccountContinue").textContent = google
       ? "Open Google Maps Directions ↗"
       : "Open Apple Maps Directions ↗";
-    const login = new URL("https://accounts.google.com/ServiceLogin");
+    const login = new URL("https://accounts.google.com/AccountChooser");
     login.searchParams.set("continue", link.href);
     $("mapAccountSignIn").href = google
       ? login.href
