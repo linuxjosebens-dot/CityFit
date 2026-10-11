@@ -1,0 +1,17 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>CityFit — Simple Presentation Guide</title><style>
+@page{size:A4;margin:15mm}*{box-sizing:border-box}body{margin:0;color:#17263a;font:11pt/1.35 Arial,sans-serif}header{border-bottom:3px solid #19776c;padding-bottom:12px}.eyebrow{color:#19776c;font-size:10pt;font-weight:bold;letter-spacing:1px}h1{font-size:29pt;margin:6px 0}h2{font-size:15pt;color:#155c53;margin:13px 0 5px}p{margin:5px 0 9px}.steps{display:flex;gap:8px;margin:15px 0}.steps div{flex:1;border-radius:8px;background:#edf5f2;padding:11px 8px;text-align:center;font-size:11pt;font-weight:bold}table{border-collapse:collapse;width:100%;font-size:10.5pt}td{padding:7px 0;border-bottom:1px solid #dae3e2;vertical-align:top}td:first-child{width:34%;font-weight:bold;color:#155c53}.callout{padding:12px;background:#edf5f2;border-left:4px solid #19776c;margin-top:17px}footer{font-size:9pt;color:#536276;margin-top:17px}
+</style></head><body>
+<header><div class="eyebrow">CITYFIT • PRESENTATION GUIDE</div><h1>How CityFit works</h1><p>CityFit helps food-truck owners find parking options in Irvine and plan the cost of a shift.</p></header>
+<div class="steps"><div>Find a place</div><div>Plan a shift</div><div>Get ready</div></div>
+<h2>1. Find parking</h2><p>Enter an address or allow location access. The website checks its saved parking records, filters them by distance and shows up to ten matching lots on the map.</p><p>Lots can be compared using distance, past shifts and traffic measurements. The records cover Irvine only. Past traffic does not tell us how many customers are there right now.</p>
+<h2>2. Estimate your earnings</h2><p>Choose a lot and enter your expected orders, average sale and costs. The planner updates the estimate as you type.</p><p><strong>Estimated earnings = sales − costs.</strong> It also shows how many orders you need to cover your costs. This is an estimate, not guaranteed profit.</p>
+<h2>3. Save and prepare</h2><p>Save favorite lots, record past shifts and use the permit checklist. Download a shift plan as a PDF. The account area lets you sign in, choose an avatar and switch between light and dark mode.</p><p>Plans and saved records stay in that browser; signing in does not automatically copy them to another device. Confirm parking and vending permission before serving.</p>
+<h2>What the main code files do</h2><table>
+<tr><td>index.html + CSS</td><td>Build the screen and control how it looks.</td></tr>
+<tr><td>app.js</td><td>Connects buttons, forms, the map and saved settings.</td></tr>
+<tr><td>parking-core.js<br>location-core.js</td><td>Organize parking records, compare lots and calculate costs.</td></tr>
+<tr><td>account.js + intro.js</td><td>Handle the profile and sign-in screens.</td></tr>
+</table>
+<div class="callout"><strong>What to say in your presentation</strong><p>“CityFit brings parking research and shift planning into one website. You find a location, estimate your costs and prepare before you serve.”</p></div>
+<footer><strong>Demo order:</strong> Locations → Planner → Permits → Data &amp; Sources</footer>
+</body></html>
