@@ -1,4 +1,29 @@
 /* Shared surfaces and state colors for both pages. */
+#signOutAccount {
+  background: #ffffff;
+  color: #18232e;
+  border: 2px solid #526273;
+  font-weight: 700;
+  opacity: 1;
+}
+#signOutAccount:hover {
+  background: #e5efe8;
+}
+html[data-theme="dark"] #signOutAccount {
+  background: #22313b;
+  color: #ffffff;
+  border-color: #a9b9c8;
+}
+html[data-theme="dark"] #signOutAccount:hover {
+  background: #304638;
+}
+#signOutAccount:focus-visible {
+  outline: 3px solid var(--teal);
+  outline-offset: 3px;
+}
+#signOutAccount:disabled {
+  cursor: wait;
+}
 :root {
   --surface: #ffffff;
   --surface-soft: #f3f6f5;
