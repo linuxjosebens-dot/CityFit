@@ -68,6 +68,25 @@ try {
       await page.locator("#profileButton").getAttribute("aria-expanded"),
       "true",
     );
+    assert.equal(await page.getByRole("radio").count(), 10);
+    for (const [key, name] of [
+      ["burger", "Burger buddy"],
+      ["pizza", "Pizza pilot"],
+      ["boba", "Boba buddy"],
+      ["sushi", "Sushi scout"],
+      ["bbq", "BBQ rider"],
+      ["salad", "Green cruiser"],
+    ]) {
+      await page.getByRole("radio", { name, exact: true }).check();
+      await page.waitForFunction((key) => {
+        const img = document.querySelector("#profilePhoto");
+        return (
+          img.src.includes(`truck-${key}.png`) &&
+          img.complete &&
+          img.naturalWidth > 0
+        );
+      }, key);
+    }
     const taco = page.getByRole("radio", { name: "Taco trail" });
     await taco.check();
     await page.waitForFunction(

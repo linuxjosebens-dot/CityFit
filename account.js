@@ -6,12 +6,24 @@ export async function initializeAccount() {
     taco: "./assets/truck-taco.png",
     coffee: "./assets/truck-coffee.png",
     sweets: "./assets/truck-sweets.png",
+    burger: "./assets/truck-burger.png",
+    pizza: "./assets/truck-pizza.png",
+    boba: "./assets/truck-boba.png",
+    sushi: "./assets/truck-sushi.png",
+    bbq: "./assets/truck-bbq.png",
+    salad: "./assets/truck-salad.png",
   };
   const avatarNames = {
     default: "Account avatar",
     taco: "Taco trail",
     coffee: "Coffee cruiser",
     sweets: "Sweet wheels",
+    burger: "Burger buddy",
+    pizza: "Pizza pilot",
+    boba: "Boba buddy",
+    sushi: "Sushi scout",
+    bbq: "BBQ rider",
+    salad: "Green cruiser",
   };
   let currentUser = null,
     selectedAvatar = "default";

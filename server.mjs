@@ -17,6 +17,13 @@ const publicFiles = new Set([
   "assets/truck-taco.png",
   "assets/truck-coffee.png",
   "assets/truck-sweets.png",
+  "assets/truck-burger.png",
+  "assets/truck-pizza.png",
+  "assets/truck-boba.png",
+  "assets/truck-sushi.png",
+  "assets/truck-bbq.png",
+  "assets/truck-salad.png",
+
   "theme.js",
   "theme.css",
   "privacy.html",

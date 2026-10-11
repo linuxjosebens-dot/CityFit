@@ -2928,15 +2928,15 @@ a.mobilebrand {
 }
 .avatar-options {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
 }
 .avatar-option {
   position: relative;
   display: grid;
   justify-items: center;
   gap: 8px;
-  padding: 14px 8px;
+  padding: 12px 6px;
   margin: 0;
   border: 2px solid var(--line);
   border-radius: 12px;
@@ -2964,8 +2964,8 @@ a.mobilebrand {
 }
 .avatar-option img,
 .avatar-default {
-  width: 80px;
-  height: 80px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
 }
 .avatar-default {
@@ -2981,4 +2981,38 @@ a.mobilebrand {
 }
 #profileDialog {
   overscroll-behavior: contain;
+}
+
+.tab-heading {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.tab-copy {
+  min-width: 0;
+  flex: 1;
+}
+.tab-illustration {
+  width: 72px;
+  height: 72px;
+  flex: 0 0 72px;
+  object-fit: cover;
+  border-radius: 18px;
+}
+.avatar-option > span:last-child {
+  min-height: 32px;
+  display: grid;
+  place-items: center;
+  line-height: 16px;
+}
+@media (max-width: 600px) {
+  .tab-heading {
+    gap: 10px;
+  }
+  .tab-illustration {
+    width: 52px;
+    height: 52px;
+    flex-basis: 52px;
+    border-radius: 12px;
+  }
 }

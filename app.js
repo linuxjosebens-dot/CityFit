@@ -15,7 +15,7 @@ import {
   dedupePlaces,
 } from "./location-core.js";
 import { PERMITS, LEGACY_AREAS } from "./business-data.js";
-import { initializeAccount } from "./account.js?v=20261011-avatars";
+import { initializeAccount } from "./account.js?v=20261011-more-avatars";
 
 const STORAGE = "city-fit-irvine-v1";
 const DEFAULT = {

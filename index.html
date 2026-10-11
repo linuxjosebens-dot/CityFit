@@ -12,7 +12,7 @@
     <link rel="icon" href="./favicon.svg" />
     <link rel="stylesheet" href="./vendor/leaflet.css" />
     <script src="./theme.js"></script>
-    <link rel="stylesheet" href="./styles.css?v=20261011-avatars" />
+    <link rel="stylesheet" href="./styles.css?v=20261011-more-avatars" />
     <link rel="stylesheet" href="./theme.css?v=20261011-contrast" />
     <script defer src="./vendor/leaflet.js"></script>
   </head>
@@ -75,13 +75,23 @@
       <main class="content" id="mainContent" tabindex="-1">
         <section id="locations" class="view">
           <div class="finder-heading">
-            <div>
-              <div class="eyebrow">Your Next Service Location</div>
-              <h1>Find your next <span>stop in Irvine.</span></h1>
-              <p>
-                Specific parking lots near your address, with past event, shift
-                and road-count evidence.
-              </p>
+            <div class="tab-heading">
+              <img
+                class="tab-illustration"
+                src="./assets/truck-burger.png"
+                width="72"
+                height="72"
+                alt=""
+                decoding="async"
+              />
+              <div class="tab-copy">
+                <div class="eyebrow">Your Next Service Location</div>
+                <h1>Find your next <span>stop in Irvine.</span></h1>
+                <p>
+                  Specific parking lots near your address, with past event,
+                  shift and road-count evidence.
+                </p>
+              </div>
             </div>
             <button class="btn dark" id="heroPlan">Open Shift Planner →</button>
           </div>
@@ -348,13 +358,24 @@
           </details>
         </section>
         <section class="view" id="planner" hidden>
-          <div class="titleblock">
-            <div class="eyebrow">Know Your Numbers</div>
-            <h1>Plan Your Shift.</h1>
-            <p>
-              Choose a location, enter your sales and fees, and see your
-              estimate update as you type.
-            </p>
+          <div class="titleblock tab-heading">
+            <div class="tab-copy">
+              <div class="eyebrow">Know Your Numbers</div>
+              <h1>Plan Your Shift.</h1>
+              <p>
+                Choose a location, enter your sales and fees, and see your
+                estimate update as you type.
+              </p>
+            </div>
+            <img
+              class="tab-illustration"
+              src="./assets/truck-coffee.png"
+              width="72"
+              height="72"
+              alt=""
+              loading="lazy"
+              decoding="async"
+            />
           </div>
           <div class="two">
             <form class="panel planner-inputs" id="budgetForm">
@@ -610,13 +631,24 @@
           </div>
         </section>
         <section class="view" id="permits" hidden>
-          <div class="titleblock">
-            <div class="eyebrow">Prepare Before You Park</div>
-            <h1>Get Ready To Serve.</h1>
-            <p>
-              Start with these six steps. Use each link for help, then check the
-              box when you have completed that step.
-            </p>
+          <div class="titleblock tab-heading">
+            <div class="tab-copy">
+              <div class="eyebrow">Prepare Before You Park</div>
+              <h1>Get Ready To Serve.</h1>
+              <p>
+                Start with these six steps. Use each link for help, then check
+                the box when you have completed that step.
+              </p>
+            </div>
+            <img
+              class="tab-illustration"
+              src="./assets/truck-salad.png"
+              width="72"
+              height="72"
+              alt=""
+              loading="lazy"
+              decoding="async"
+            />
           </div>
           <div class="two permit-overview">
             <div class="panel">
@@ -679,10 +711,21 @@
           <div id="lotPermits" class="lot-permits"></div>
         </section>
         <section class="view" id="data" hidden>
-          <div class="titleblock">
-            <div class="eyebrow">Trace Every Result</div>
-            <h1>Data And Sources.</h1>
-            <p>Key sources and limits behind your results.</p>
+          <div class="titleblock tab-heading">
+            <div class="tab-copy">
+              <div class="eyebrow">Trace Every Result</div>
+              <h1>Data And Sources.</h1>
+              <p>Key sources and limits behind your results.</p>
+            </div>
+            <img
+              class="tab-illustration"
+              src="./assets/truck-sweets.png"
+              width="72"
+              height="72"
+              alt=""
+              loading="lazy"
+              decoding="async"
+            />
           </div>
           <div class="provider-connections" id="providerConnections"></div>
           <div class="sourcegrid" id="sourceCards"></div>
@@ -787,7 +830,7 @@
       >
     </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
-    <script type="module" src="./app.js?v=20261011-avatars"></script>
+    <script type="module" src="./app.js?v=20261011-more-avatars"></script>
     <dialog id="profileDialog" aria-labelledby="profileTitle">
       <div class="dialoghead">
         <h2 id="profileTitle">Your profile</h2>
@@ -889,6 +932,60 @@
               alt=""
               loading="lazy"
             /><span>Sweet wheels</span></label
+          >
+          <label class="avatar-option"
+            ><input type="radio" name="truckAvatar" value="burger" /><img
+              src="./assets/truck-burger.png"
+              width="64"
+              height="64"
+              alt=""
+              loading="lazy"
+            /><span>Burger buddy</span></label
+          >
+          <label class="avatar-option"
+            ><input type="radio" name="truckAvatar" value="pizza" /><img
+              src="./assets/truck-pizza.png"
+              width="64"
+              height="64"
+              alt=""
+              loading="lazy"
+            /><span>Pizza pilot</span></label
+          >
+          <label class="avatar-option"
+            ><input type="radio" name="truckAvatar" value="boba" /><img
+              src="./assets/truck-boba.png"
+              width="64"
+              height="64"
+              alt=""
+              loading="lazy"
+            /><span>Boba buddy</span></label
+          >
+          <label class="avatar-option"
+            ><input type="radio" name="truckAvatar" value="sushi" /><img
+              src="./assets/truck-sushi.png"
+              width="64"
+              height="64"
+              alt=""
+              loading="lazy"
+            /><span>Sushi scout</span></label
+          >
+          <label class="avatar-option"
+            ><input type="radio" name="truckAvatar" value="bbq" /><img
+              src="./assets/truck-bbq.png"
+              width="64"
+              height="64"
+              alt=""
+              loading="lazy"
+            /><span>BBQ rider</span></label
+          >
+          <label class="avatar-option"
+            ><input type="radio" name="truckAvatar" value="salad" /><img
+              src="./assets/truck-salad.png"
+              width="64"
+              height="64"
+              alt=""
+              loading="lazy"
+            /><span>Green cruiser</span></label
           >
         </div>
         <p class="help" id="avatarStatus" role="status" aria-live="polite"></p>
