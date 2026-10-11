@@ -26,6 +26,8 @@ function setMode(next) {
 }
 $("signInTab").onclick = () => setMode("signin");
 $("signUpTab").onclick = () => setMode("signup");
+$("signInTab").disabled = false;
+$("signUpTab").disabled = false;
 function busy(value) {
   for (const id of [
     "googleLogin",
@@ -35,7 +37,8 @@ function busy(value) {
     "resetPassword",
     "introSignOut",
   ])
-    $(id).disabled = value || !initialized;
+    $(id).disabled =
+      value || (!["signInTab", "signUpTab"].includes(id) && !initialized);
 }
 function showError(error) {
   const messages = {
