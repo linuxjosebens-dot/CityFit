@@ -11,7 +11,9 @@
     <title>CityFit Irvine — Find your next stop</title>
     <link rel="icon" href="./favicon.svg" />
     <link rel="stylesheet" href="./vendor/leaflet.css" />
+    <script src="./theme.js"></script>
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./theme.css" />
     <script defer src="./vendor/leaflet.js"></script>
   </head>
   <body>
@@ -50,13 +52,18 @@
         <a
           class="mobilebrand"
           href="https://linuxjosebens-dot.github.io/CityFit/intro.html"
+          href="./intro.html"
           aria-label="CityFit Irvine — Back to introduction"
           >CityFit Irvine</a
         >
         <div class="crumb">
           Irvine / <strong id="crumb">Location Research</strong>
         </div>
-        <span class="badge blue">Irvine Only · Food Trucks</span>
+        <div class="account-toolbar">
+          <button class="btn secondary" id="profileButton" type="button">
+            Profile
+          </button>
+        </div>
       </header>
       <main class="content" id="mainContent" tabindex="-1">
         <section id="locations" class="view">
@@ -152,29 +159,37 @@
             </div>
             <div class="near-summary" id="nearSummary" hidden></div>
           </section>
-          <section class="service-strip" aria-label="Your service profile">
-            <div class="field">
-              <label for="cuisine"><span>02</span> What Will You Serve?</label
-              ><select id="cuisine">
-                <option value="meals">Meals, Tacos & Bowls</option>
-                <option value="coffee">Coffee & Breakfast</option>
-                <option value="dessert">Desserts & Snacks</option>
-              </select>
+          <section class="service-strip" aria-label="Your service schedule">
+            <div class="field wide-field">
+              <label for="serviceStartDate"
+                ><span>02</span> Custom service dates</label
+              >
+              <div class="date-range-row">
+                <input id="serviceStartDate" type="date" />
+                <span>to</span>
+                <input id="serviceEndDate" type="date" />
+              </div>
+              <div
+                id="serviceDatePicker"
+                class="service-date-picker"
+                aria-label="Select custom service dates"
+              ></div>
+              <p class="help">
+                Pick a start date and drag across the calendar to your end date,
+                or select a few single-day windows for your service plan.
+              </p>
             </div>
             <div class="field">
-              <label for="slot"><span>03</span> When Will You Serve?</label
-              ><select id="slot">
-                <option value="breakfast">Breakfast · 7–10 A.M.</option>
-                <option value="lunch">Lunch · 11 A.M.–2 P.M.</option>
-                <option value="dinner">Dinner · 5–8 P.M.</option>
-              </select>
+              <label for="serviceStartTime"
+                ><span>03</span> Custom start time</label
+              >
+              <input id="serviceStartTime" type="time" value="11:00" />
             </div>
             <div class="field">
-              <label for="day"><span>04</span> Which Days?</label
-              ><select id="day">
-                <option value="weekday">Weekdays</option>
-                <option value="weekend">Weekends</option>
-              </select>
+              <label for="serviceEndTime"
+                ><span>04</span> Custom end time</label
+              >
+              <input id="serviceEndTime" type="time" value="14:00" />
             </div>
             <div class="profile-note">
               Your profile carries into the shift planner. Actual customer
@@ -726,5 +741,66 @@
     </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
     <script type="module" src="./app.js"></script>
+    <dialog id="profileDialog" aria-labelledby="profileTitle">
+      <div class="dialoghead">
+        <h2 id="profileTitle">Your profile</h2>
+        <button
+          id="closeProfile"
+          type="button"
+          class="close"
+          aria-label="Close profile"
+        >
+          ×
+        </button>
+      </div>
+      <div class="profile-identity">
+        <div class="profile-avatar">
+          <span id="profileInitial" aria-hidden="true">G</span
+          ><img id="profilePhoto" alt="" hidden referrerpolicy="no-referrer" />
+        </div>
+        <div>
+          <strong id="profileName">Guest</strong>
+          <p id="accountEmail" class="help"></p>
+        </div>
+      </div>
+      <p id="profileStatus" role="status" aria-live="polite">
+        Checking sign-in…
+      </p>
+      <div id="profileGuest" hidden>
+        <p>Sign in with your existing Firebase account.</p>
+        <a class="btn dark" href="./intro.html">Sign in / Create account →</a>
+      </div>
+      <div id="profileMember" hidden>
+        <dl class="profile-details">
+          <dt>Sign-in method</dt>
+          <dd id="accountProvider"></dd>
+          <dt>Email status</dt>
+          <dd id="profileVerified"></dd>
+          <dt>Member since</dt>
+          <dd id="profileCreated"></dd>
+        </dl>
+        <div class="theme-control">
+          <label for="lightModeToggle">Light mode</label
+          ><input
+            id="lightModeToggle"
+            type="checkbox"
+            role="switch"
+            data-light-mode
+            checked
+          /><span id="themeStatus" role="status" class="help" hidden></span>
+        </div>
+        <button id="signOutAccount" type="button" class="btn outline">
+          Sign out
+        </button>
+      </div>
+      <div class="profile-counts">
+        <span><strong id="profileSavedCount">0</strong> saved locations</span
+        ><span><strong id="profileShiftCount">0</strong> recorded shifts</span>
+      </div>
+      <p class="help">
+        Your planner records stay in this browser. Signing out keeps them here.
+      </p>
+      <a class="textbtn" href="./privacy.html">Privacy & terms →</a>
+    </dialog>
   </body>
 </html>

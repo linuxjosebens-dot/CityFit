@@ -15,6 +15,7 @@ import {
   dedupePlaces,
 } from "./location-core.js";
 import { PERMITS, LEGACY_AREAS } from "./business-data.js";
+import { initializeAccount } from "./account.js";
 
 const STORAGE = "city-fit-irvine-v1";
 const DEFAULT = {
@@ -28,6 +29,11 @@ const DEFAULT = {
   cuisine: "meals",
   slot: "lunch",
   day: "weekday",
+  serviceStartDate: "",
+  serviceEndDate: "",
+  serviceStartTime: "11:00",
+  serviceEndTime: "14:00",
+  serviceSelectedDates: [],
   saved: [],
   approvals: {},
   checks: {},
@@ -107,6 +113,38 @@ const roadName = (v) =>
 const reducedMotion = () =>
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+const toISODate = (date) => {
+  const value = new Date(date);
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, "0");
+  const day = String(value.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const addDays = (isoDate, count) => {
+  const date = new Date(`${isoDate}T12:00:00`);
+  date.setDate(date.getDate() + count);
+  return toISODate(date);
+};
+
+const datesBetween = (startIso, endIso) => {
+  const start = new Date(`${startIso}T12:00:00`);
+  const end = new Date(`${endIso}T12:00:00`);
+  const list = [];
+  const cursor = new Date(start);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return list;
+  const min = start < end ? start : end;
+  const max = start < end ? end : start;
+  for (
+    const value = new Date(min);
+    value <= max;
+    value.setDate(value.getDate() + 1)
+  ) {
+    list.push(toISODate(value));
+  }
+  return list;
+};
+
 export function loadState() {
   try {
     const r = JSON.parse(
@@ -179,6 +217,17 @@ export function loadState() {
       ? s.slot
       : "lunch";
     s.day = ["weekday", "weekend"].includes(s.day) ? s.day : "weekday";
+    s.serviceStartDate =
+      typeof s.serviceStartDate === "string" ? s.serviceStartDate : "";
+    s.serviceEndDate =
+      typeof s.serviceEndDate === "string" ? s.serviceEndDate : "";
+    s.serviceStartTime =
+      typeof s.serviceStartTime === "string" ? s.serviceStartTime : "11:00";
+    s.serviceEndTime =
+      typeof s.serviceEndTime === "string" ? s.serviceEndTime : "14:00";
+    s.serviceSelectedDates = Array.isArray(s.serviceSelectedDates)
+      ? s.serviceSelectedDates.filter((v) => typeof v === "string")
+      : [];
     for (const k of Object.keys(DEFAULT.budget).filter((k) => k !== "area")) {
       const n = Number(s.budget[k]);
       s.budget[k] = Number.isFinite(n) && n >= 0 ? n : DEFAULT.budget[k];
@@ -281,7 +330,9 @@ export async function initApp() {
     geolocationVersion = 0,
     routeVersion = 0,
     detailReturnId = null,
-    storageWarningShown = false;
+    storageWarningShown = false,
+    serviceRangeDrag = null;
+  initializeAccount();
   const allPlaces = () =>
     state.provider === "public"
       ? parkingPlaces(parking, catalog.places, boundary, parking.fetchedAt)
@@ -305,7 +356,101 @@ export async function initApp() {
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => ($("toast").hidden = true), 3500);
   }
+  function updateProfileStats() {
+    $("profileSavedCount").textContent = state.saved.length;
+    $("profileShiftCount").textContent = state.logs.length;
+  }
+  function updateServiceRange(startIso, endIso) {
+    const nextStart = startIso || "";
+    const nextEnd = endIso || "";
+    state.serviceStartDate = nextStart;
+    state.serviceEndDate = nextEnd;
+    state.serviceSelectedDates =
+      nextStart && nextEnd
+        ? datesBetween(nextStart, nextEnd)
+        : nextStart
+          ? [nextStart]
+          : [];
+    save();
+    const startInput = $("serviceStartDate");
+    const endInput = $("serviceEndDate");
+    if (startInput) startInput.value = nextStart;
+    if (endInput) endInput.value = nextEnd;
+    renderServiceDatePicker();
+  }
+  function renderServiceDatePicker() {
+    const picker = $("serviceDatePicker");
+    if (!picker) return;
+    const today = new Date();
+    const monthAnchor = state.serviceStartDate
+      ? new Date(`${state.serviceStartDate}T12:00:00`)
+      : new Date(today.getFullYear(), today.getMonth(), 1);
+    const monthDate = new Date(
+      monthAnchor.getFullYear(),
+      monthAnchor.getMonth(),
+      1,
+    );
+    const monthLabel = monthDate.toLocaleDateString("en-US", {
+      month: "long",
+      year: "numeric",
+    });
+    const firstWeekday = monthDate.getDay();
+    const daysInMonth = new Date(
+      monthDate.getFullYear(),
+      monthDate.getMonth() + 1,
+      0,
+    ).getDate();
+    const selectedSet = new Set(state.serviceSelectedDates);
+    const startDate = state.serviceStartDate || "";
+    const endDate = state.serviceEndDate || "";
+    const cells = [];
+    for (let i = 0; i < firstWeekday; i += 1)
+      cells.push('<span class="empty-day"></span>');
+    for (let day = 1; day <= daysInMonth; day += 1) {
+      const iso = toISODate(
+        new Date(monthDate.getFullYear(), monthDate.getMonth(), day),
+      );
+      const isSelected = selectedSet.has(iso);
+      const isRangeStart = iso === startDate;
+      const isRangeEnd = iso === endDate;
+      const isInRange = !!startDate && !!endDate && isSelected;
+      cells.push(
+        `<button type="button" class="calendar-day ${isSelected ? "selected" : ""} ${isRangeStart ? "range-start" : ""} ${isRangeEnd ? "range-end" : ""} ${isInRange ? "in-range" : ""}" data-date="${iso}" aria-label="${iso}">${day}</button>`,
+      );
+    }
+    picker.innerHTML = `
+      <div class="calendar-header">
+        <strong>${monthLabel}</strong>
+      </div>
+      <div class="calendar-weekdays"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+      <div class="calendar-grid">${cells.join("")}</div>
+    `;
+    picker.querySelectorAll("[data-date]").forEach((button) => {
+      button.addEventListener("pointerdown", (event) => {
+        const date = button.dataset.date;
+        if (!date) return;
+        event.preventDefault();
+        if (
+          !state.serviceStartDate ||
+          (state.serviceStartDate && state.serviceEndDate)
+        ) {
+          updateServiceRange(date, date);
+          serviceRangeDrag = date;
+          return;
+        }
+        updateServiceRange(state.serviceStartDate, date);
+        serviceRangeDrag = date;
+      });
+      button.addEventListener("pointerenter", () => {
+        if (!serviceRangeDrag) return;
+        const currentDate = button.dataset.date;
+        if (!currentDate) return;
+        updateServiceRange(serviceRangeDrag, currentDate);
+      });
+    });
+  }
   function save() {
+    updateProfileStats();
     try {
       localStorage.setItem(STORAGE, JSON.stringify(state));
     } catch {
@@ -1541,15 +1686,49 @@ export async function initApp() {
     }
   };
   $("resetMap").onclick = fitMap;
-  for (const k of ["cuisine", "slot", "day"]) {
-    $(k).value = state[k];
-    $(k).onchange = () => {
-      state[k] = $(k).value;
+  $("serviceStartDate").value = state.serviceStartDate;
+  $("serviceEndDate").value = state.serviceEndDate;
+  $("serviceStartTime").value = state.serviceStartTime;
+  $("serviceEndTime").value = state.serviceEndTime;
+  $("serviceStartDate").onchange = () => {
+    const endValue = $("serviceEndDate").value;
+    if (!$("serviceStartDate").value) {
+      state.serviceStartDate = "";
+      state.serviceEndDate = "";
+      state.serviceSelectedDates = [];
       save();
-      render();
-      fitMap();
-    };
-  }
+      renderServiceDatePicker();
+      return;
+    }
+    const start = $("serviceStartDate").value;
+    const end = endValue && endValue < start ? start : endValue || start;
+    updateServiceRange(start, end);
+  };
+  $("serviceEndDate").onchange = () => {
+    const startValue = $("serviceStartDate").value;
+    if (!$("serviceEndDate").value) {
+      state.serviceEndDate = "";
+      state.serviceSelectedDates = startValue ? [startValue] : [];
+      save();
+      renderServiceDatePicker();
+      return;
+    }
+    const end = $("serviceEndDate").value;
+    const start = startValue || end;
+    updateServiceRange(start, end);
+  };
+  $("serviceStartTime").onchange = () => {
+    state.serviceStartTime = $("serviceStartTime").value || "11:00";
+    save();
+  };
+  $("serviceEndTime").onchange = () => {
+    state.serviceEndTime = $("serviceEndTime").value || "14:00";
+    save();
+  };
+  window.addEventListener("pointerup", () => {
+    serviceRangeDrag = null;
+  });
+  renderServiceDatePicker();
   for (const k of Object.keys(DEFAULT.budget).filter((k) => k !== "area"))
     $(k).value = state.budget[k];
   $("fuelType").value = state.fuelType;
@@ -1753,6 +1932,7 @@ export async function initApp() {
   fitMap();
   await Promise.allSettled([loadProviders(), refreshPublicSources()]);
   fitMap();
+  updateProfileStats();
   return {
     getState: () => structuredClone(state),
     getVisible: () => structuredClone(visible),

@@ -41,8 +41,11 @@
       When enabled, email and Google sign-in are handled by Firebase
       Authentication. Authentication details are sent to Firebase; Google
       sign-in also uses Google. The current planner can be used without an
-      account, and its saved plans stay in this browser. CityFit does not
-      synchronize them to an account.
+      account. Profile details (name, photo, email, sign-in method, verification
+      status, and creation date) come from Firebase Authentication. Plans and
+      shift records stay in this browser, are not uploaded to an account, and
+      are shared across people using this browser. Signing out does not erase
+      browser records.
     </p>
     <h2>Location search</h2>
     <p>

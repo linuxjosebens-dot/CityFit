@@ -7,6 +7,22 @@ const browser = await chromium.launch({ headless: true });
 const base = process.env.TEST_BASE_URL || "http://localhost:8080";
 await mkdir(new URL("./artifacts/", import.meta.url), { recursive: true });
 try {
+  // Opening the dialog must not depend on the authentication module loading.
+  const blockedLogin = await browser.newPage();
+  await blockedLogin.route("**/intro.js?*", (route) => route.abort());
+  await blockedLogin.goto(
+    new URL("./intro.html", base.endsWith("/") ? base : base + "/").href,
+  );
+  await blockedLogin.locator("#openLogin").click();
+  assert.equal(await blockedLogin.locator("#authDialog").isVisible(), true);
+  await blockedLogin.waitForFunction(() =>
+    document
+      .getElementById("authStatus")
+      .textContent.includes("could not load"),
+  );
+  await blockedLogin.locator("#closeLogin").click();
+  assert.equal(await blockedLogin.locator("#authDialog").isVisible(), false);
+  await blockedLogin.close();
   for (const viewport of [
     { width: 1440, height: 1000 },
     { width: 390, height: 844 },
@@ -19,6 +35,12 @@ try {
     });
     const page = await context.newPage(),
       errors = [];
+    await page.route("**/auth-config.js", (route) =>
+      route.fulfill({
+        contentType: "text/javascript",
+        body: "export const firebaseConfig = {};",
+      }),
+    );
     await page.route("**/api/parking-fee?**", (route) => {
       const url = new URL(route.request().url());
       return route.fulfill({
@@ -142,6 +164,41 @@ try {
     );
     assert.equal(await page.locator(".venue-card").count(), 0);
     assert.equal(await page.locator("#exportPlan").isDisabled(), true);
+    await page.locator("[data-start]").click();
+    assert.equal(
+      await page
+        .locator("#startAddress")
+        .evaluate((e) => document.activeElement === e),
+      true,
+    );
+    for (const id of ["heroPlan", "sidePlan"]) {
+      if (!(await page.locator(`#${id}`).isVisible())) continue;
+      await page.locator(`#${id}`).click();
+      assert.equal(await page.locator("#budgetForm").isVisible(), true);
+      await page.locator("#plannerLocation").click();
+      assert.equal(await page.locator("#startAddress").isVisible(), true);
+    }
+    await page.locator("#exampleOrigin").click();
+    await page.waitForFunction(
+      () => document.querySelectorAll(".venue-card").length === 10,
+    );
+    const savedId = await page
+      .locator("[data-save]")
+      .first()
+      .getAttribute("data-save");
+    await page.locator(`[data-save="${savedId}"]`).click();
+    assert.equal(await page.locator("#savedCount").textContent(), "1");
+    await page.locator("#savedOnly").check();
+    assert.equal(await page.locator(".venue-card").count(), 1);
+    await page.locator(`[data-save="${savedId}"]`).click();
+    assert.equal(await page.locator(".venue-card").count(), 0);
+    await page.locator("#savedOnly").uncheck();
+    await page.locator("#resetMap").click();
+    await page.locator("#refreshPlaces").click();
+    await page.waitForFunction(
+      () => !document.getElementById("refreshPlaces").disabled,
+    );
+    await page.locator("#clearOrigin").click();
     await page.route("https://ipapi.co/json/", (route) =>
       route.fulfill({
         json: { latitude: 33.6859574, longitude: -117.8261275, city: "Irvine" },
@@ -329,6 +386,11 @@ try {
     await page.locator("#logHours").fill("2");
     await page.locator('#logForm button[type="submit"]').click();
     assert.equal(await page.locator(".logentry").count(), 1);
+    const csvPromise = page.waitForEvent("download");
+    await page.locator("#exportLog").click();
+    const csv = await csvPromise;
+    assert.equal(csv.suggestedFilename(), "city-fit-irvine-shift-log.csv");
+    assert.ok((await readFile(await csv.path(), "utf8")).includes("100"));
     assert.equal(await page.locator("#orders").inputValue(), "150");
     assert.equal(
       await page.locator("#orders").evaluate((e) => e.readOnly),
@@ -426,6 +488,18 @@ try {
     await page.locator("#clearOrigin").click();
     assert.equal(await page.locator(".venue-card").count(), 0);
     assert.equal(await page.locator(".leaflet-marker-icon").count(), 0);
+    await page.locator('[data-view="data"]').click();
+    await page.locator("#sourceLog").click();
+    assert.equal(await page.locator("#budgetForm").isVisible(), true);
+    await page.locator("[data-remove]").click();
+    assert.equal(await page.locator(".logentry").count(), 0);
+    await page.locator('[data-view="permits"]').click();
+    const check = page.locator("[data-check]").first();
+    await check.check();
+    await page.reload();
+    await page.locator('[data-view="permits"]').click();
+    assert.equal(await check.isChecked(), true);
+    await check.uncheck();
     assert.deepEqual(errors, []);
     console.log(`Passed browser workflows at ${viewport.width}px`);
     await context.close();
