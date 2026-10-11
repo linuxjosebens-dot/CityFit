@@ -92,9 +92,17 @@ try {
       await page.locator("[data-view='permits']").click();
       await check(["#permits label", "#permits .help", "#permits h3"]);
       await page.locator("[data-view='data']").click();
-      await check([".source h3", ".source p", ".badge"]);
+      await check([
+        ".source h3",
+        ".source p",
+        ".badge",
+        "#dataProvenance h4",
+        "#dataProvenance p",
+        ".provenance-table th",
+        ".provenance-table td",
+      ]);
       for (const kind of ["parking", "catalog", "traffic"]) {
-        await page.locator(`[data-dataset="${kind}"]`).click();
+        await page.locator(`[data-dataset="${kind}"]`).first().click();
         await page.waitForFunction(
           () => !document.querySelector("#datasetSearch").disabled,
         );

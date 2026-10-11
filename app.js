@@ -12,6 +12,7 @@ import {
   calculateBudget,
   googleLink,
   dedupePlaces,
+  PEDESTRIAN_SITES,
 } from "./location-core.js";
 import { PERMITS, LEGACY_AREAS } from "./business-data.js";
 import { initializeAccount } from "./account.js?v=20261011-google-links";
@@ -1904,7 +1905,7 @@ export async function initApp() {
       title: "Parking Lots",
       tag: "OpenStreetMap",
       type: "blue",
-      desc: "Mapped lots, outlines and access tags. Partial Irvine coverage.",
+      desc: "Community-mapped parking records from OpenStreetMap, not a live parking inventory. Read the provenance below for filters, generated names and access limitations.",
       url: "./parking-snapshot.json",
       dataset: "parking",
       date: "Retrieval dates shown on results",
@@ -1913,9 +1914,17 @@ export async function initApp() {
       title: "Road Traffic",
       tag: "City of Irvine",
       type: "blue",
-      desc: "Historical vehicle counts matched to roads within 0.15 miles.",
-      url: "https://gis.cityofirvine.org/arcgis/rest/services/ADT/MapServer",
-      date: "Measurement year shown with each count",
+      desc: "City of Irvine Average Daily Traffic (ADT), layer 1: 2022 ADT. Results use the nearest eligible measured road within 0.15 miles; these are historical vehicles/day, not customers.",
+      url: "https://gis.cityofirvine.org/arcgis/rest/services/ADT/MapServer/1",
+      date: "2022 measurements · saved October 10, 2026",
+    },
+    {
+      title: "Foot Traffic",
+      tag: "Caltrans",
+      type: "blue",
+      desc: "2025 Pedestrian Count Dataset, four survey sites. CityFit sums direction counts at each recorded hour and averages those hourly totals. No nearby site means no data, not zero pedestrians.",
+      url: "https://data.ca.gov/@caltrans/at-count-dataset",
+      date: "2025 observations · calculation verified October 11, 2026",
     },
     {
       title: "Past Events And Shifts",
@@ -1933,6 +1942,10 @@ export async function initApp() {
     )
     .join("");
   if ($("sourceLog")) $("sourceLog").onclick = () => view("planner");
+  $("pedestrianProvenanceRows").innerHTML = PEDESTRIAN_SITES.map(
+    (site) =>
+      `<tr><th scope="row">${safe(site.id)}</th><td>${site.lat}, ${site.lon}</td><td>${site.start} – ${site.end}</td><td>${count(site.observedHours)}</td><td>${count(Math.round(site.count * site.observedHours))}</td><td>${site.count.toFixed(2)}</td></tr>`,
+  ).join("");
   const data = await Promise.allSettled([
     fetchJSON("./catalog-snapshot.json"),
     fetchJSON("./traffic-snapshot.json"),

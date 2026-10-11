@@ -12,7 +12,7 @@
     <link rel="icon" href="./favicon.svg" />
     <link rel="stylesheet" href="./vendor/leaflet.css" />
     <script src="./theme.js"></script>
-    <link rel="stylesheet" href="./styles.css?v=20261011-more-avatars" />
+    <link rel="stylesheet" href="./styles.css?v=20261011-data-provenance" />
     <link rel="stylesheet" href="./theme.css?v=20261011-contrast" />
     <script defer src="./vendor/leaflet.js"></script>
   </head>
@@ -746,6 +746,199 @@
           </div>
           <div class="provider-connections" id="providerConnections"></div>
           <div class="sourcegrid" id="sourceCards"></div>
+          <div class="panel method" id="dataProvenance">
+            <h3>Exactly Where These Numbers Come From</h3>
+            <p>
+              CityFit uses saved public datasets and your own shift records.
+              Google sign-in identifies your account; it does not supply
+              traffic, Google Places data, parking occupancy or permission to
+              sell food. Opening Google Maps provides an external map or
+              directions.
+            </p>
+
+            <h4>Foot traffic: Caltrans pedestrian survey counts</h4>
+            <p>
+              The source is Caltrans’s
+              <a
+                href="https://data.ca.gov/@caltrans/at-count-dataset"
+                target="_blank"
+                rel="noopener"
+                >Active Transportation Count Dataset</a
+              >, specifically the
+              <a
+                href="https://publish.data.ca.gov/dataset/a6328169-40c5-4c44-9fce-4aeefde3fbbb/resource/19c7234f-3a76-4e39-89ea-0801cd71c0d4/download/caltrans_pedestrian_hourly_count_2025.csv"
+                target="_blank"
+                rel="noopener"
+                >2025 pedestrian hourly CSV (about 76 MB)</a
+              >. CityFit uses the CSV fields loc_id, latitude, longitude, date,
+              direction and count. Caltrans describes collection through
+              district pilot projects and vendor technologies such as video
+              analytics. The CSV does not identify the exact equipment used at
+              each of these four sites.
+            </p>
+            <p>
+              <strong>Calculation:</strong> For each site and recorded
+              date/hour, add the counts from all direction rows. Add those
+              hourly totals and divide by the number of distinct recorded hours.
+              Recorded zero-count hours are included; absent hours are not
+              filled with zeros. Counts are pedestrian observations, not unique
+              people. The dates below describe the first and last recorded
+              hours, not continuous coverage of every hour between them. The
+              calculations and coordinates were checked against the original CSV
+              on October 11, 2026.
+            </p>
+            <div
+              class="tablewrap"
+              role="region"
+              aria-label="Caltrans pedestrian site calculations"
+              tabindex="0"
+            >
+              <table class="provenance-table">
+                <caption>
+                  All four pedestrian sites used by CityFit · observations from
+                  2025
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Site ID</th>
+                    <th scope="col">Latitude, longitude</th>
+                    <th scope="col">Observation dates</th>
+                    <th scope="col">Recorded hours</th>
+                    <th scope="col">Total observations</th>
+                    <th scope="col">Average per recorded hour</th>
+                  </tr>
+                </thead>
+                <tbody id="pedestrianProvenanceRows"></tbody>
+              </table>
+            </div>
+            <p>
+              <strong>Matching and limits:</strong> A result uses the nearest
+              survey point within 0.15 straight-line miles of the mapped lot
+              center or venue reference point. The displayed count is rounded to
+              one decimal. A nearby survey is not a count of people entering
+              that lot, likely customers or a live crowd. Caltrans notes
+              incomplete geographic coverage and possible undercounts during
+              adverse weather. If there is no eligible nearby site, CityFit
+              shows “No data.”
+            </p>
+
+            <h4>Road traffic: City of Irvine historical ADT</h4>
+            <p>
+              The exact source is the City’s
+              <a
+                href="https://gis.cityofirvine.org/arcgis/rest/services/ADT/MapServer/1"
+                target="_blank"
+                rel="noopener"
+                >2022 ADT GIS layer, ID 1</a
+              >. ADT means Average Daily Traffic. Its OBJECTID identifies a road
+              record, STREETNAME names the road and Y2022 supplies the 2022
+              vehicles/day value. The saved file was retrieved October 10, 2026,
+              at 21:54 UTC. Retrieval in 2026 does not make these 2026
+              measurements. All 345 saved road records and their year fields
+              were compared with the City’s published layer on October 11, 2026
+              and matched.
+            </p>
+            <p>
+              <strong>What results use:</strong> The saved results dataset
+              contains 52 road segments with positive 2022 counts. CityFit finds
+              the shortest straight-line distance from a lot or venue reference
+              point to each segment’s mapped line and selects the closest one
+              within 0.15 miles. It displays that segment’s Y2022 count without
+              adding roads together, estimating a current value or converting it
+              to pedestrians. The service does not provide exact survey dates or
+              counting equipment in these fields, so CityFit does not claim
+              those details.
+            </p>
+            <p>
+              The
+              <a href="./traffic-snapshot.json" data-dataset="traffic"
+                >saved traffic measurements</a
+              >
+              table also preserves 2012–2019, 2021 and 2022 fields for 345 road
+              records. Missing fields are shown as “Not recorded.” There is no
+              2020 field in this saved layer. No eligible measured road produces
+              an unknown count, not zero vehicles. Daily road exposure cannot
+              establish parking availability, vehicle arrivals at the lot, sales
+              or current congestion.
+            </p>
+
+            <h4>
+              Parking lots: OpenStreetMap records and City place references
+            </h4>
+            <p>
+              The
+              <a href="./parking-snapshot.json" data-dataset="parking"
+                >parking dataset</a
+              >
+              contains 46 saved OpenStreetMap records, retrieved October 10,
+              2026, at 21:54 UTC. OpenStreetMap is a community-maintained map,
+              not a City-approved list of food-truck sites. Coverage is selected
+              areas near City Hall, Great Park, Heritage, Hicks Canyon, Mike
+              Ward, Spectrum, Portola Springs and UCI; it is not every Irvine
+              lot. Each result’s “Open Place Source” link opens its exact
+              OpenStreetMap node or way ID so you can inspect its mapped tags
+              and history.
+            </p>
+            <p>
+              <strong>Included lots:</strong> Results require amenity=parking
+              and parking=surface, a valid reference point inside Irvine’s
+              boundary, and no recorded access=private/no, hgv=private/no,
+              motor_vehicle=no or motorcar=no restriction. Passing these filters
+              only means the record has no such exclusion tag. Missing
+              truck-access tags mean access is not recorded, not that a food
+              truck is allowed. Mapped capacity, fee, operator and access values
+              are map tags; they do not verify current vacant spaces,
+              dimensions, a current fee schedule or vendor permission.
+            </p>
+            <p>
+              <strong>Names and addresses:</strong> CityFit uses a mapped name
+              or lot reference when present. When no name exists, it creates a
+              readable label from the nearest saved venue within 0.35
+              straight-line miles and a compass direction, such as “North
+              Surface Lot.” Duplicate labels receive a number. These are CityFit
+              labels, not official lot names. “Near” addresses refer to a nearby
+              venue, not a verified lot entrance. Great Park Parking Lot 2 is
+              named from the linked City event evidence. Lot coordinates
+              identify the mapped center, not an entrance or an approved vending
+              bay.
+            </p>
+            <p>
+              The
+              <a href="./catalog-snapshot.json" data-dataset="catalog"
+                >94 saved place references</a
+              >
+              come from City of Irvine and OpenStreetMap records, retrieved
+              October 10, 2026. City park records link to the
+              <a
+                href="https://gis.cityofirvine.org/arcgis/rest/services/Parks/MapServer/4"
+                target="_blank"
+                rel="noopener"
+                >City Parks GIS layer 4</a
+              >; each record retains its own source link. Park polygon centers
+              are venue references. A park listing or restroom reference does
+              not prove a restroom exists inside a neighboring parking lot.
+            </p>
+
+            <h4>Fees, past events and your own records</h4>
+            <p>
+              Fee guidance links to the published operator or City document on
+              each lot card. A community “free” or “paid” tag does not verify
+              today’s price. Campus and shopping-center visitor guidance is not
+              a truck-vending quote; the Great Park proposal is explicitly
+              marked as a proposal with the current fee unconfirmed. Confirm the
+              exact lot’s current rate and host permission.
+            </p>
+            <p>
+              Past-event evidence comes from the linked City announcements,
+              newsletters and recreation guides on each result. CityFit labels
+              whether the document names the exact lot, the venue or a nearby
+              event. An advertised food-truck event does not prove vendors
+              operated in every nearby lot or have permission today. Orders/hour
+              comes only from the shift logs you enter, calculated from recorded
+              orders and service hours. Profit estimates use your inputs.
+              Neither is a public traffic measurement.
+            </p>
+          </div>
           <div class="panel method">
             <h3>What To Know</h3>
             <p>
@@ -847,7 +1040,7 @@
       >
     </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
-    <script type="module" src="./app.js?v=20261011-google-links"></script>
+    <script type="module" src="./app.js?v=20261011-data-provenance"></script>
     <dialog id="profileDialog" aria-labelledby="profileTitle">
       <div class="dialoghead">
         <h2 id="profileTitle">Your profile</h2>

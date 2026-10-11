@@ -522,6 +522,20 @@ try {
       0,
     );
 
+    assert.equal(await page.locator("#pedestrianProvenanceRows tr").count(), 4);
+    assert.match(await page.locator("#dataProvenance").innerText(), /2022 ADT/);
+    assert.match(
+      await page.locator("#pedestrianProvenanceRows").innerText(),
+      /33,805/,
+    );
+    assert.equal(
+      await page
+        .locator(
+          '#sourceCards a[href="https://data.ca.gov/@caltrans/at-count-dataset"]',
+        )
+        .count(),
+      1,
+    );
     for (const [kind, key] of [
       ["parking", "elements"],
       ["catalog", "places"],
@@ -533,7 +547,7 @@ try {
           "utf8",
         ),
       );
-      await page.locator(`[data-dataset="${kind}"]`).click();
+      await page.locator(`[data-dataset="${kind}"]`).first().click();
       await page.waitForFunction(
         () => !document.getElementById("datasetSearch").disabled,
       );
