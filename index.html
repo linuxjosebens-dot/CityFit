@@ -43,7 +43,6 @@
         <button class="btn outline" id="sidePlan">Plan A Shift →</button>
       </div>
       <div class="sidefoot">
-        <a href="./intro.html">Account / Sign in →</a><br /><br />
         Irvine, California<br />Places, Routes & Shift Planning<br /><br />Preferences
         and logs save in this browser.
       </div>
@@ -159,29 +158,27 @@
             </div>
             <div class="near-summary" id="nearSummary" hidden></div>
           </section>
-          <section class="service-strip" aria-label="Your service profile">
-            <div class="field">
-              <label for="cuisine"><span>02</span> What Will You Serve?</label
-              ><select id="cuisine">
-                <option value="meals">Meals, Tacos & Bowls</option>
-                <option value="coffee">Coffee & Breakfast</option>
-                <option value="dessert">Desserts & Snacks</option>
-              </select>
+          <section class="service-strip" aria-label="Your service schedule">
+            <div class="field wide-field">
+              <label for="serviceStartDate"><span>02</span> Custom service dates</label>
+              <div class="date-range-row">
+                <input id="serviceStartDate" type="date" />
+                <span>to</span>
+                <input id="serviceEndDate" type="date" />
+              </div>
+              <div id="serviceDatePicker" class="service-date-picker" aria-label="Select custom service dates"></div>
+              <p class="help">
+                Pick a start date and drag across the calendar to your end date,
+                or select a few single-day windows for your service plan.
+              </p>
             </div>
             <div class="field">
-              <label for="slot"><span>03</span> When Will You Serve?</label
-              ><select id="slot">
-                <option value="breakfast">Breakfast · 7–10 A.M.</option>
-                <option value="lunch">Lunch · 11 A.M.–2 P.M.</option>
-                <option value="dinner">Dinner · 5–8 P.M.</option>
-              </select>
+              <label for="serviceStartTime"><span>03</span> Custom start time</label>
+              <input id="serviceStartTime" type="time" value="11:00" />
             </div>
             <div class="field">
-              <label for="day"><span>04</span> Which Days?</label
-              ><select id="day">
-                <option value="weekday">Weekdays</option>
-                <option value="weekend">Weekends</option>
-              </select>
+              <label for="serviceEndTime"><span>04</span> Custom end time</label>
+              <input id="serviceEndTime" type="time" value="14:00" />
             </div>
             <div class="profile-note">
               Your profile carries into the shift planner. Actual customer

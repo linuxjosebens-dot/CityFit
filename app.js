@@ -29,6 +29,11 @@ const DEFAULT = {
   cuisine: "meals",
   slot: "lunch",
   day: "weekday",
+  serviceStartDate: "",
+  serviceEndDate: "",
+  serviceStartTime: "11:00",
+  serviceEndTime: "14:00",
+  serviceSelectedDates: [],
   saved: [],
   approvals: {},
   checks: {},
@@ -108,6 +113,34 @@ const roadName = (v) =>
 const reducedMotion = () =>
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+const toISODate = (date) => {
+  const value = new Date(date);
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, "0");
+  const day = String(value.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const addDays = (isoDate, count) => {
+  const date = new Date(`${isoDate}T12:00:00`);
+  date.setDate(date.getDate() + count);
+  return toISODate(date);
+};
+
+const datesBetween = (startIso, endIso) => {
+  const start = new Date(`${startIso}T12:00:00`);
+  const end = new Date(`${endIso}T12:00:00`);
+  const list = [];
+  const cursor = new Date(start);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return list;
+  const min = start < end ? start : end;
+  const max = start < end ? end : start;
+  for (const value = new Date(min); value <= max; value.setDate(value.getDate() + 1)) {
+    list.push(toISODate(value));
+  }
+  return list;
+};
+
 export function loadState() {
   try {
     const r = JSON.parse(
@@ -180,6 +213,13 @@ export function loadState() {
       ? s.slot
       : "lunch";
     s.day = ["weekday", "weekend"].includes(s.day) ? s.day : "weekday";
+    s.serviceStartDate = typeof s.serviceStartDate === "string" ? s.serviceStartDate : "";
+    s.serviceEndDate = typeof s.serviceEndDate === "string" ? s.serviceEndDate : "";
+    s.serviceStartTime = typeof s.serviceStartTime === "string" ? s.serviceStartTime : "11:00";
+    s.serviceEndTime = typeof s.serviceEndTime === "string" ? s.serviceEndTime : "14:00";
+    s.serviceSelectedDates = Array.isArray(s.serviceSelectedDates)
+      ? s.serviceSelectedDates.filter((v) => typeof v === "string")
+      : [];
     for (const k of Object.keys(DEFAULT.budget).filter((k) => k !== "area")) {
       const n = Number(s.budget[k]);
       s.budget[k] = Number.isFinite(n) && n >= 0 ? n : DEFAULT.budget[k];
