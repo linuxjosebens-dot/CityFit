@@ -8,10 +8,6 @@ const root = fileURLToPath(new URL(".", import.meta.url));
 const cache = new Map();
 const publicFiles = new Set([
   "index.html",
-  "intro.html",
-  "intro.css",
-  "intro.js",
-  "auth-config.js",
   "privacy.html",
   "favicon.svg",
   "styles.css",
@@ -292,7 +288,7 @@ export const server = http.createServer(async (req, res) => {
       return;
     }
     const name = decodeURIComponent(
-      url.pathname === "/" ? "/intro.html" : url.pathname,
+      url.pathname === "/" ? "/index.html" : url.pathname,
     ).slice(1);
     if (!publicFiles.has(name)) {
       json(404, { error: "Not found." });

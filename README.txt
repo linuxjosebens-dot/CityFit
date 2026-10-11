@@ -6,12 +6,6 @@ Run npm start, then open http://localhost:8080.
 Use PORT=8087 npm start if port 8080 is occupied.
 Serve the app through a web server; do not open index.html directly.
 
-Intro and accounts
-The server opens the introduction page at /. The planner is /index.html.
-See AUTH-SETUP.md to enable email accounts and Google sign-in. Authentication
-is prepared but disabled until Firebase is configured. Google controls its
-own two-step verification. Guest access remains available.
-
 What the app does
 - Finds mapped surface parking lots within Irvine and your search radius.
 - Groups lot choices by venue and gives repeated lot names stable numbers.
