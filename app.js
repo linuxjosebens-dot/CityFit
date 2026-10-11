@@ -1746,6 +1746,7 @@ export async function initApp() {
     };
   });
   window.addEventListener("hashchange", () => view(location.hash.slice(1)));
+  if (viewIds.has(location.hash.slice(1))) view(location.hash.slice(1));
   $("heroPlan").onclick = $("sidePlan").onclick = () => view("planner");
   $("changePermitLocation").onclick = () => {
     view("planner");
@@ -1888,7 +1889,6 @@ export async function initApp() {
   if (data[3].status === "fulfilled") parking = data[3].value;
   initMap();
   render();
-  if (viewIds.has(location.hash.slice(1))) view(location.hash.slice(1));
   fitMap();
   await Promise.allSettled([loadProviders(), refreshPublicSources()]);
   fitMap();
