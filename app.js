@@ -877,7 +877,7 @@ export async function initApp() {
     syncTravel();
     const b = calculateBudget(state.budget);
     $("surplus").textContent = money(b.surplus);
-    $("surplus").style.color = b.surplus >= 0 ? "var(--teal)" : "#a54837";
+    $("surplus").style.color = b.surplus >= 0 ? "var(--teal)" : "var(--error)";
     $("budgetRows").innerHTML = [
       ["Revenue Before Sales Tax", b.revenue],
       ["Food & Packaging", (-b.revenue * state.budget.food) / 100],

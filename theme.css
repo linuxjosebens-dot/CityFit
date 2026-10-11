@@ -1,3 +1,13 @@
+/* Shared surfaces and state colors for both pages. */
+:root {
+  --surface: #ffffff;
+  --surface-soft: #f3f6f5;
+  --surface-hover: #e5efe8;
+  --selection: #226d63;
+  --on-selection: #ffffff;
+  --range: #e2eee9;
+  --error: #9b4231;
+}
 .theme-control {
   display: flex;
   justify-content: space-between;
@@ -49,6 +59,13 @@ html[data-theme="dark"] {
   --line: #334351;
   --teal: #89d2bb;
   --amber: #f0c181;
+  --surface: #1a2631;
+  --surface-soft: #22313b;
+  --surface-hover: #304638;
+  --selection: #89d2bb;
+  --on-selection: #101820;
+  --range: #263e37;
+  --error: #ffb4a5;
   color-scheme: dark;
 }
 html[data-theme="dark"]
@@ -166,4 +183,123 @@ html[data-theme="dark"] dialog::backdrop {
   .theme-control input::before {
     transition: none;
   }
+}
+
+/* Calendar states use the same palette as the surrounding controls. */
+.service-date-picker {
+  background: var(--surface-soft);
+  color: var(--ink);
+  border-color: var(--line);
+}
+.calendar-day:hover {
+  background: var(--surface-hover);
+  border-color: var(--teal);
+}
+.calendar-day.in-range {
+  background: var(--range);
+  color: var(--ink);
+}
+.calendar-day.selected:not(.in-range),
+.calendar-day.range-start,
+.calendar-day.range-end {
+  background: var(--selection);
+  color: var(--on-selection);
+  border-color: var(--selection);
+}
+html[data-theme="dark"] :is(label, .venue-why, .google-attribution) {
+  color: var(--muted);
+}
+html[data-theme="dark"] :is(.venue-source a, .profile-avatar) {
+  color: var(--teal);
+}
+html[data-theme="dark"]
+  :is(
+    .suggestions,
+    .map-fallback,
+    .map-provider,
+    .eventdate,
+    .budgetbar,
+    .progress,
+    .factor > div,
+    .discovery-map,
+    .leaflet-control-attribution,
+    #profileInitial,
+    .skip
+  ) {
+  background: var(--surface-soft);
+  color: var(--ink);
+  border-color: var(--line);
+}
+html[data-theme="dark"] :is(.gps-button, .venue-rank, .location-distance) {
+  background: var(--range);
+  color: var(--ink);
+  border-color: var(--line);
+}
+html[data-theme="dark"]
+  :is(
+    .suggestion:hover,
+    .suggestion.selected,
+    .location-map-links a:hover,
+    select:hover:not(:disabled)
+  ) {
+  background-color: var(--surface-hover);
+  color: var(--ink);
+  border-color: var(--teal);
+}
+html[data-theme="dark"] :is(.preview-arrow, .closing .button) {
+  color: #152137;
+}
+html[data-theme="dark"] .button:hover {
+  background: #a4e0cb;
+  color: #101820;
+}
+html[data-theme="dark"]
+  :is(.origin-status.error, input:user-invalid, select:user-invalid) {
+  color: var(--error);
+}
+html[data-theme="dark"]
+  :is(.budgetrow, .venue-source, .steps article, .promise-strip) {
+  border-color: var(--line);
+}
+html[data-theme="dark"] :focus-visible {
+  outline-color: var(--teal);
+}
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+/* Keep the dropdown arrow when changing the dark control's background. */
+html[data-theme="dark"] select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='m4 6 4 4 4-4' fill='none' stroke='%2389d2bb' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+@supports (appearance: base-select) {
+  html[data-theme="dark"] select {
+    background-image: none;
+  }
+  html[data-theme="dark"] select::picker(select) {
+    background: var(--surface);
+    color: var(--ink);
+    border-color: var(--line);
+  }
+  html[data-theme="dark"] select option:is(:hover, :focus-visible, :checked) {
+    background: var(--surface-hover);
+    color: var(--ink);
+  }
+}
+/* Outline buttons on light panels need dark text; the sidebar stays navy. */
+html[data-theme="light"] .main .btn.outline {
+  color: var(--ink);
+}
+
+html[data-theme="dark"] .leaflet-control-attribution a {
+  color: var(--teal);
+}
+html[data-theme="dark"] .leaflet-popup-content button {
+  color: #152137;
+}
+html[data-theme="light"] .evidence-pill.unknown {
+  color: #5e685f;
 }

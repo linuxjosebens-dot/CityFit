@@ -52,6 +52,7 @@ npm test
 npm run format:check
 npm start                         (in another terminal)
 npm run test:browser
+npm run test:theme                (checks light/dark text contrast)
 Browser tests mock external services at 1440, 390 and 320 pixels.
 Artifacts are saved under artifacts/ and excluded from source control.
 Tests do not verify external-service uptime or real device location.
