@@ -321,3 +321,43 @@ test("every mapped lot has a distinct consistent name across parks", () => {
   const names = new Map(reversed.map((p) => [p.id, p.name]));
   for (const place of places) assert.equal(names.get(place.id), place.name);
 });
+
+test("mobile location falls back from GPS failures to approximate location", async () => {
+  for (const code of [2, 3]) {
+    const requests = [];
+    const origin = await resolveCurrentLocation({
+      geolocation: {
+        getCurrentPosition(success, failure, options) {
+          requests.push(options);
+          if (requests.length === 1) failure({ code });
+          else
+            success({
+              coords: { latitude: 33.68, longitude: -117.82, accuracy: 850 },
+            });
+        },
+      },
+    });
+    assert.equal(requests.length, 2);
+    assert.deepEqual(requests[1], {
+      enableHighAccuracy: false,
+      timeout: 20000,
+      maximumAge: 60000,
+    });
+    assert.match(origin.precision, /850 m/);
+  }
+});
+test("mobile location does not retry denied permissions", async () => {
+  let calls = 0;
+  await assert.rejects(
+    resolveCurrentLocation({
+      geolocation: {
+        getCurrentPosition(success, failure) {
+          calls++;
+          failure({ code: 1 });
+        },
+      },
+    }),
+    /permission was denied/,
+  );
+  assert.equal(calls, 1);
+});

@@ -30,6 +30,8 @@ try {
   ]) {
     const context = await browser.newContext({
       viewport,
+      isMobile: viewport.width < 760,
+      hasTouch: viewport.width < 760,
       reducedMotion: "reduce",
       acceptDownloads: true,
     });
@@ -219,7 +221,8 @@ try {
     await page.locator("#clearOrigin").click();
     // Native browser permission denial must recover without inventing an origin.
     await context.clearPermissions();
-    await page.locator("#useLocation").click();
+    if (viewport.width < 760) await page.locator("#useLocation").tap();
+    else await page.locator("#useLocation").click();
     await page.waitForFunction(() =>
       document
         .getElementById("addressStatus")
@@ -239,7 +242,8 @@ try {
     page.on("request", (request) => {
       if (request.url().includes("photon.komoot.io")) currentLocationLookups++;
     });
-    await page.locator("#useLocation").click();
+    if (viewport.width < 760) await page.locator("#useLocation").tap();
+    else await page.locator("#useLocation").click();
     await page.waitForFunction(
       () =>
         document.getElementById("startAddress").value === "My current location",

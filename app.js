@@ -279,25 +279,39 @@ export async function resolveCurrentLocation({
     throw new Error(
       "Location services are unavailable in this browser. Open the HTTPS website or enter your starting address.",
     );
-  const position = await new Promise((resolve, reject) => {
-    geolocation.getCurrentPosition(
-      resolve,
-      (error) => {
-        const messages = {
-          1: "Location permission was denied. Allow location for this website in your browser settings, then retry, or enter your starting address.",
-          2: "Your device could not determine its location. Check that location services are enabled, then retry or enter your starting address.",
-          3: "Finding your location took too long. Retry or enter your starting address.",
-        };
-        reject(
-          new Error(
-            messages[error?.code] ||
-              "Current location is unavailable. Enter your starting address instead.",
-          ),
-        );
-      },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+  const request = (options) =>
+    new Promise((resolve, reject) => {
+      geolocation.getCurrentPosition(resolve, reject, options);
+    });
+  let position;
+  try {
+    try {
+      position = await request({
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0,
+      });
+    } catch (error) {
+      // GPS may fail indoors or with approximate location enabled on a phone.
+      // Permission denial must never trigger another permission request.
+      if (![2, 3].includes(error?.code)) throw error;
+      position = await request({
+        enableHighAccuracy: false,
+        timeout: 20000,
+        maximumAge: 60000,
+      });
+    }
+  } catch (error) {
+    const messages = {
+      1: "Location permission was denied. Allow location for this website and your browser in your phone settings, then retry. On iPhone, check Location Services and Safari Websites. If opened inside another app, open this site in Safari or Chrome. You can also enter your starting address.",
+      2: "Your device could not determine its location. Check that location services are enabled, then retry or enter your starting address.",
+      3: "Finding your location took too long. Retry with Wi-Fi or mobile data enabled, or enter your starting address.",
+    };
+    throw new Error(
+      messages[error?.code] ||
+        "Current location is unavailable. Open this site in Safari or Chrome, or enter your starting address.",
     );
-  });
+  }
   const accuracy = position?.coords?.accuracy;
   const origin = {
     lat: position?.coords?.latitude,
