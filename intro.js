@@ -65,7 +65,7 @@ $("googleLogin").onclick = async () => {
   busy(true);
   try {
     await sdk.signInWithPopup(auth, new sdk.GoogleAuthProvider());
-    location.assign("./index.html");
+    location.assign("https://linuxjosebens-dot.github.io/CityFit/");
   } catch (error) {
     showError(error);
   } finally {
@@ -100,7 +100,7 @@ $("authForm").onsubmit = async (event) => {
         await sdk.signOut(auth);
         $("authStatus").textContent =
           "Verify your email using the link we sent before signing in.";
-      } else location.assign("./index.html");
+      } else location.assign("https://linuxjosebens-dot.github.io/CityFit/");
     }
   } catch (error) {
     showError(error);
