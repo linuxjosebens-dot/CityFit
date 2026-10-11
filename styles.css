@@ -75,6 +75,7 @@ button:disabled {
   z-index: 5;
 }
 .brand {
+  display: block;
   font-size: 29px;
   font-weight: 800;
   letter-spacing: -1.5px;
@@ -779,6 +780,11 @@ dialog::backdrop {
 }
 .mobilebrand {
   display: none;
+}
+.brand,
+.mobilebrand {
+  color: inherit;
+  text-decoration: none;
 }
 .localstatus {
   font-size: 11px;
