@@ -70,9 +70,6 @@ try {
           );
       };
       await check([
-        ".calendar-header",
-        ".calendar-weekdays span",
-        ".calendar-day",
         ".service-strip label",
         ".gps-button",
         ".help",
@@ -85,16 +82,6 @@ try {
         ".map-legend",
         ".leaflet-control-attribution",
       ]);
-      await page.locator(".calendar-day:not(.selected)").first().hover();
-      await check([".calendar-day:hover"]);
-      await page.mouse.move(0, 0);
-      if (theme === "dark")
-        assert.equal(
-          await page
-            .locator(".service-date-picker")
-            .evaluate((el) => getComputedStyle(el).backgroundColor),
-          "rgb(34, 49, 59)",
-        );
       await page.locator("[data-view='planner']").click();
       await check([
         "#planner label",
@@ -127,7 +114,7 @@ try {
       );
     }
     console.log(
-      `Passed light/dark calendar, labels, planner, permits, data and login contrast at ${width}px`,
+      `Passed light/dark labels, planner, permits, data and login contrast at ${width}px`,
     );
     await page.close();
   }

@@ -185,27 +185,6 @@ html[data-theme="dark"] dialog::backdrop {
   }
 }
 
-/* Calendar states use the same palette as the surrounding controls. */
-.service-date-picker {
-  background: var(--surface-soft);
-  color: var(--ink);
-  border-color: var(--line);
-}
-.calendar-day:hover {
-  background: var(--surface-hover);
-  border-color: var(--teal);
-}
-.calendar-day.in-range {
-  background: var(--range);
-  color: var(--ink);
-}
-.calendar-day.selected:not(.in-range),
-.calendar-day.range-start,
-.calendar-day.range-end {
-  background: var(--selection);
-  color: var(--on-selection);
-  border-color: var(--selection);
-}
 html[data-theme="dark"] :is(label, .venue-why, .google-attribution) {
   color: var(--muted);
 }
