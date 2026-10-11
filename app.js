@@ -1842,6 +1842,133 @@ export async function initApp() {
       "text/csv",
     );
   };
+  const datasets = {
+    parking: { title: "Parking lots", url: "./parking-snapshot.json" },
+    catalog: { title: "Saved place records", url: "./catalog-snapshot.json" },
+    traffic: {
+      title: "Saved traffic measurements",
+      url: "./traffic-snapshot.json",
+    },
+  };
+  let datasetRows = [],
+    datasetVersion = 0,
+    datasetTrigger;
+  function renderDataset() {
+    const query = $("datasetSearch").value.trim().toLowerCase();
+    const matches = datasetRows.filter((row) =>
+      row.some((value) => String(value).toLowerCase().includes(query)),
+    );
+    $("datasetCount").textContent =
+      `${matches.length} of ${datasetRows.length} records`;
+    $("datasetBody").innerHTML = matches.length
+      ? matches
+          .map(
+            (row) =>
+              `<tr>${row.map((value) => `<td>${safe(value)}</td>`).join("")}</tr>`,
+          )
+          .join("")
+      : `<tr><td colspan="20">No matching records.</td></tr>`;
+  }
+  async function openDataset(kind, trigger) {
+    const config = datasets[kind];
+    if (!config) return;
+    const version = ++datasetVersion;
+    datasetTrigger = trigger;
+    $("datasetTitle").textContent = config.title;
+    $("datasetStatus").textContent = "Loading saved records…";
+    $("datasetSearch").value = "";
+    $("datasetSearch").disabled = true;
+    $("datasetHead").innerHTML = $("datasetBody").innerHTML = "";
+    $("datasetCount").textContent = "";
+    $("datasetDownload").hidden = true;
+    if (!$("datasetDialog").open) $("datasetDialog").showModal();
+    try {
+      const data = await fetchJSON(config.url);
+      if (version !== datasetVersion || !$("datasetDialog").open) return;
+      let headings;
+      if (kind === "parking") {
+        headings = [
+          "Parking lot",
+          "Record ID",
+          "Access",
+          "Truck access",
+          "Parking fee",
+          "Operator",
+        ];
+        datasetRows = (data.elements || []).map((record) => [
+          record.tags?.name || "Unnamed mapped lot",
+          `${record.type}/${record.id}`,
+          accessText(record.tags?.access),
+          accessText(record.tags?.hgv),
+          record.tags?.fee || "Not recorded",
+          record.tags?.operator || "Not recorded",
+        ]);
+      } else if (kind === "catalog") {
+        headings = [
+          "Place",
+          "Address",
+          "Category",
+          "Source",
+          "Latitude",
+          "Longitude",
+        ];
+        datasetRows = (data.places || []).map((record) => [
+          record.name,
+          record.address || "Not recorded",
+          CATEGORY_NAMES[record.category] || record.category,
+          record.source,
+          record.lat,
+          record.lon,
+        ]);
+      } else {
+        const years = data.availableYears || [data.year];
+        headings = ["Road", ...years.map((year) => `${year} vehicles/day`)];
+        datasetRows = (data.historicalRecords || data.segments || []).map(
+          (record) => [
+            roadName(record.name),
+            ...years.map(
+              (year) =>
+                (record.measurements || record.history || {})[year] ??
+                (year === data.year ? record.count : null) ??
+                "Not recorded",
+            ),
+          ],
+        );
+      }
+      $("datasetHead").innerHTML =
+        `<tr>${headings.map((label) => `<th scope="col">${safe(label)}</th>`).join("")}</tr>`;
+      $("datasetStatus").textContent =
+        `Saved snapshot · Retrieved ${dateText(data.fetchedAt)}`;
+      $("datasetSearch").disabled = false;
+      $("datasetDownload").href = config.url;
+      $("datasetDownload").download = config.url.split("/").pop();
+      $("datasetDownload").hidden = false;
+      renderDataset();
+    } catch {
+      if (version !== datasetVersion || !$("datasetDialog").open) return;
+      $("datasetStatus").textContent =
+        "Saved records could not load. Close this window and open the link again to retry.";
+    }
+  }
+  document.addEventListener("click", (event) => {
+    const link = event.target.closest("[data-dataset]");
+    if (
+      !link ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey ||
+      event.altKey
+    )
+      return;
+    event.preventDefault();
+    openDataset(link.dataset.dataset, link);
+  });
+  $("closeDataset").onclick = () => $("datasetDialog").close();
+  $("datasetSearch").oninput = renderDataset;
+  $("datasetDialog").addEventListener("close", () => {
+    datasetVersion++;
+    datasetTrigger?.focus({ preventScroll: true });
+  });
   const sourceRows = [
     {
       title: "Parking Lots",
@@ -1849,6 +1976,7 @@ export async function initApp() {
       type: "blue",
       desc: "Mapped lots, outlines and access tags. Partial Irvine coverage.",
       url: "./parking-snapshot.json",
+      dataset: "parking",
       date: "Retrieval dates shown on results",
     },
     {
@@ -1871,7 +1999,7 @@ export async function initApp() {
   $("sourceCards").innerHTML = sourceRows
     .map(
       (s) =>
-        `<article class="source"><span class="badge ${s.type}">${safe(s.tag)}</span><h3>${safe(s.title)}</h3><p>${safe(s.desc)}</p>${s.url ? `<a href="${s.url}" target="_blank" rel="noopener">Open source ↗</a>` : '<button class="textbtn" id="sourceLog">Record a shift →</button>'}<small>${safe(s.date)}</small></article>`,
+        `<article class="source"><span class="badge ${s.type}">${safe(s.tag)}</span><h3>${safe(s.title)}</h3><p>${safe(s.desc)}</p>${s.url ? `<a href="${s.url}" ${s.dataset ? `data-dataset="${s.dataset}"` : 'target="_blank" rel="noopener"'}>Open source ↗</a>` : '<button class="textbtn" id="sourceLog">Record a shift →</button>'}<small>${safe(s.date)}</small></article>`,
     )
     .join("");
   if ($("sourceLog")) $("sourceLog").onclick = () => view("planner");

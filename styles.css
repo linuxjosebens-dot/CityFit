@@ -2858,3 +2858,44 @@ a.mobilebrand {
     gap: 12px;
   }
 }
+
+#datasetDialog {
+  width: min(1000px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: 24px;
+}
+.dataset-table {
+  overflow: auto;
+  max-height: 50dvh;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.dataset-table table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+}
+.dataset-table :is(th, td) {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  min-width: 130px;
+}
+.dataset-table th {
+  position: sticky;
+  top: 0;
+  background: var(--surface-soft);
+  color: var(--ink);
+}
+#datasetDownload {
+  display: inline-flex;
+  margin-top: 12px;
+  min-height: 44px;
+  align-items: center;
+  text-decoration: none;
+}
+@media (max-width: 480px) {
+  #datasetDialog {
+    padding: 16px;
+  }
+}

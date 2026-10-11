@@ -93,6 +93,24 @@ try {
       await check(["#permits label", "#permits .help", "#permits h3"]);
       await page.locator("[data-view='data']").click();
       await check([".source h3", ".source p", ".badge"]);
+      for (const kind of ["parking", "catalog", "traffic"]) {
+        await page.locator(`[data-dataset="${kind}"]`).click();
+        await page.waitForFunction(
+          () => !document.querySelector("#datasetSearch").disabled,
+        );
+        await check([
+          "#datasetTitle",
+          "#datasetStatus",
+          "#datasetCount",
+          ".dataset-table th",
+          ".dataset-table tbody tr:first-child td",
+          "#datasetDownload",
+        ]);
+        const bounds = await page.locator("#datasetDialog").boundingBox();
+        assert.ok(bounds.x >= 0 && bounds.x + bounds.width <= width);
+        await page.locator("#closeDataset").click();
+      }
+
       await page.locator("[data-view='locations']").click();
       await page.goto(base + "/intro.html");
       await check([

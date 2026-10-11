@@ -517,6 +517,43 @@ try {
     assert.equal(await page.locator(".venue-card").count(), 0);
     assert.equal(await page.locator(".leaflet-marker-icon").count(), 0);
     await page.locator('[data-view="data"]').click();
+    for (const [kind, key] of [
+      ["parking", "elements"],
+      ["catalog", "places"],
+      ["traffic", "historicalRecords"],
+    ]) {
+      const snapshot = JSON.parse(
+        await readFile(
+          new URL(`./${kind}-snapshot.json`, import.meta.url),
+          "utf8",
+        ),
+      );
+      await page.locator(`[data-dataset="${kind}"]`).click();
+      await page.waitForFunction(
+        () => !document.getElementById("datasetSearch").disabled,
+      );
+      assert.equal(await page.locator("#datasetDialog").isVisible(), true);
+      assert.equal(
+        await page.locator("#datasetBody tr").count(),
+        snapshot[key].length,
+      );
+      await page.locator("#datasetSearch").fill("no-such-record-123xyz");
+      assert.equal(
+        await page.locator("#datasetCount").textContent(),
+        `0 of ${snapshot[key].length} records`,
+      );
+      await page.locator("#datasetSearch").fill("");
+      const datasetDownload = page.waitForEvent("download");
+      await page.locator("#datasetDownload").click();
+      const datasetFile = await datasetDownload;
+      assert.equal(datasetFile.suggestedFilename(), `${kind}-snapshot.json`);
+      const downloaded = JSON.parse(
+        await readFile(await datasetFile.path(), "utf8"),
+      );
+      assert.equal(downloaded[key].length, snapshot[key].length);
+      await page.locator("#closeDataset").click();
+      assert.equal(await page.locator("#datasetDialog").isVisible(), false);
+    }
     await page.locator("#sourceLog").click();
     assert.equal(await page.locator("#budgetForm").isVisible(), true);
     await page.locator("[data-remove]").click();

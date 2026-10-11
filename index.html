@@ -12,7 +12,7 @@
     <link rel="icon" href="./favicon.svg" />
     <link rel="stylesheet" href="./vendor/leaflet.css" />
     <script src="./theme.js"></script>
-    <link rel="stylesheet" href="./styles.css?v=20261011-navigation" />
+    <link rel="stylesheet" href="./styles.css?v=20261011-record-links" />
     <link rel="stylesheet" href="./theme.css?v=20261011-contrast" />
     <script defer src="./vendor/leaflet.js"></script>
   </head>
@@ -694,11 +694,11 @@
               costs and host approval before booking.
             </p>
             <p>
-              <a href="./catalog-snapshot.json" target="_blank" rel="noopener"
+              <a href="./catalog-snapshot.json" data-dataset="catalog"
                 >Saved place records ↗</a
               >
               ·
-              <a href="./traffic-snapshot.json" target="_blank" rel="noopener"
+              <a href="./traffic-snapshot.json" data-dataset="traffic"
                 >Saved traffic measurements ↗</a
               >
               ·
@@ -738,8 +738,48 @@
     <dialog id="detailDialog" aria-label="Location details">
       <div id="detailContent"></div>
     </dialog>
+    <dialog id="datasetDialog" aria-labelledby="datasetTitle">
+      <div class="dialoghead">
+        <h2 id="datasetTitle">Saved records</h2>
+        <button
+          type="button"
+          class="close"
+          id="closeDataset"
+          aria-label="Close saved records"
+        >
+          ×
+        </button>
+      </div>
+      <p class="help" id="datasetStatus" role="status" aria-live="polite"></p>
+      <label for="datasetSearch">Search these records</label>
+      <input
+        id="datasetSearch"
+        type="search"
+        placeholder="Search by name, source or measurement"
+        disabled
+      />
+      <p class="help" id="datasetCount" role="status"></p>
+      <div
+        class="dataset-table"
+        tabindex="0"
+        role="region"
+        aria-label="Saved records table"
+      >
+        <table>
+          <thead id="datasetHead"></thead>
+          <tbody id="datasetBody"></tbody>
+        </table>
+      </div>
+      <p class="help">
+        Saved records are historical research data. They do not confirm current
+        parking availability, vendor permission or traffic.
+      </p>
+      <a class="btn secondary" id="datasetDownload" download hidden
+        >Download original data (JSON)</a
+      >
+    </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
-    <script type="module" src="./app.js?v=20261011-navigation-ready"></script>
+    <script type="module" src="./app.js?v=20261011-record-links"></script>
     <dialog id="profileDialog" aria-labelledby="profileTitle">
       <div class="dialoghead">
         <h2 id="profileTitle">Your profile</h2>
