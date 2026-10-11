@@ -7,6 +7,22 @@ const browser = await chromium.launch({ headless: true });
 const base = process.env.TEST_BASE_URL || "http://localhost:8080";
 await mkdir(new URL("./artifacts/", import.meta.url), { recursive: true });
 try {
+  // Opening the dialog must not depend on the authentication module loading.
+  const blockedLogin = await browser.newPage();
+  await blockedLogin.route("**/intro.js?*", (route) => route.abort());
+  await blockedLogin.goto(
+    new URL("./intro.html", base.endsWith("/") ? base : base + "/").href,
+  );
+  await blockedLogin.locator("#openLogin").click();
+  assert.equal(await blockedLogin.locator("#authDialog").isVisible(), true);
+  await blockedLogin.waitForFunction(() =>
+    document
+      .getElementById("authStatus")
+      .textContent.includes("could not load"),
+  );
+  await blockedLogin.locator("#closeLogin").click();
+  assert.equal(await blockedLogin.locator("#authDialog").isVisible(), false);
+  await blockedLogin.close();
   for (const viewport of [
     { width: 1440, height: 1000 },
     { width: 390, height: 844 },

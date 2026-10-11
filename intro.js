@@ -12,9 +12,6 @@ const ready = Boolean(
   firebaseConfig.projectId &&
   firebaseConfig.appId,
 );
-$("openLogin").onclick = () => dialog.showModal();
-$("closeLogin").onclick = () => dialog.close();
-dialog.addEventListener("close", () => $("openLogin").focus());
 function setMode(next) {
   mode = next;
   $("signInTab").setAttribute("aria-pressed", String(next === "signin"));

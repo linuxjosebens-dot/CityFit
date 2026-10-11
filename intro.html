@@ -256,6 +256,19 @@
         >
       </p>
     </dialog>
-    <script type="module" src="./intro.js"></script>
+    <script>
+      const loginDialog = document.getElementById("authDialog");
+      document.getElementById("openLogin").onclick = () =>
+        loginDialog.showModal();
+      document.getElementById("closeLogin").onclick = () => loginDialog.close();
+      loginDialog.addEventListener("close", () => {
+        document.getElementById("authPassword").value = "";
+        document.getElementById("openLogin").focus();
+      });
+      import("./intro.js?v=20261010-login").catch(() => {
+        document.getElementById("authStatus").textContent =
+          "Sign-in could not load. Refresh this page and check your connection. You can still continue as a guest.";
+      });
+    </script>
   </body>
 </html>
