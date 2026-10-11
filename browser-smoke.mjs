@@ -199,20 +199,23 @@ try {
       () => !document.getElementById("refreshPlaces").disabled,
     );
     await page.locator("#clearOrigin").click();
-    await page.route("https://ipapi.co/json/", (route) =>
-      route.fulfill({
-        json: { latitude: 33.6859574, longitude: -117.8261275, city: "Irvine" },
-      }),
+    // Native browser permission denial must recover without inventing an origin.
+    await context.clearPermissions();
+    await page.locator("#useLocation").click();
+    await page.waitForFunction(() =>
+      document
+        .getElementById("addressStatus")
+        .textContent.includes("permission was denied"),
     );
-    await page.addInitScript(() => {
-      navigator.geolocation.getCurrentPosition = () => {
-        throw new Error("Unexpected permission request");
-      };
+    assert.equal(await page.locator("#useLocation").isEnabled(), true);
+    assert.equal(await page.locator("#startAddress").inputValue(), "");
+    await context.setGeolocation({
+      latitude: 33.6859574,
+      longitude: -117.8261275,
+      accuracy: 10,
     });
-    await page.evaluate(() => {
-      navigator.geolocation.getCurrentPosition = () => {
-        throw new Error("Unexpected permission request");
-      };
+    await context.grantPermissions(["geolocation"], {
+      origin: new URL(base).origin,
     });
     let currentLocationLookups = 0;
     page.on("request", (request) => {
@@ -221,18 +224,25 @@ try {
     await page.locator("#useLocation").click();
     await page.waitForFunction(
       () =>
-        document.getElementById("startAddress").value ===
-        "Near Irvine (approximate)",
+        document.getElementById("startAddress").value === "My current location",
     );
     await page.locator("#findAddress").evaluate((button) => button.click());
     await page.waitForFunction(() =>
       document.getElementById("addressStatus").textContent.startsWith("Using "),
     );
     assert.equal(currentLocationLookups, 0);
+    const deviceOrigin = await page.evaluate(
+      () => JSON.parse(localStorage.getItem("city-fit-irvine-v1")).origin,
+    );
+    assert.equal(deviceOrigin.lat, 33.6859574);
+    assert.equal(deviceOrigin.lon, -117.8261275);
+    assert.match(deviceOrigin.precision, /Device location/);
+    assert.equal(await page.locator(".leaflet-marker-icon").count(), 11);
+
     assert.equal(await page.locator("#addressSuggestions").isHidden(), true);
     assert.match(
       await page.locator("#addressStatus").textContent(),
-      /Using Near Irvine/,
+      /Using My current location/,
     );
     await page.locator("#clearOrigin").click();
     await page.locator("#startAddress").fill("Costa");

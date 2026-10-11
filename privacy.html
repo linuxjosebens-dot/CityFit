@@ -52,13 +52,14 @@
     <h2>Location search</h2>
     <p>
       Address search text is sent to Photon to find matching OpenStreetMap
-      addresses. Current Location sends a request to ipapi.co, which estimates
-      your area from your IP address. It does not request device GPS permission.
-      Network location may be inaccurate, especially with a VPN. A selected
-      point is used to calculate distance. Connected Google or Apple place and
-      route lookups send the origin and destination coordinates to that
-      provider. Public City and OpenStreetMap catalog refreshes retrieve Irvine
-      records without your street address.
+      addresses. Current Location asks your browser for permission to use device
+      location services. The resulting coordinates become your starting point
+      and are stored with your preferences in this browser. You can deny access
+      and enter an address instead. Accuracy depends on your device and is shown
+      when available. A selected point is used to calculate distance. Connected
+      Google or Apple place and route lookups send the origin and destination
+      coordinates to that provider. Public City and OpenStreetMap catalog
+      refreshes retrieve Irvine records without your street address.
     </p>
     <p>
       Automatic travel estimates send origin and destination coordinates to

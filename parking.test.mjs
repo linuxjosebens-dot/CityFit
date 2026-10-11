@@ -220,36 +220,66 @@ test("order automation uses only matching real shifts and weights service hours"
   assert.equal(forecastShiftOrders(logs, { ...context, slot: "dinner" }), null);
 });
 
-test("current location uses network lookup without requesting device permission", async () => {
+test("current location requests fresh device coordinates and reports accuracy", async () => {
+  let requestedOptions;
   const origin = await resolveCurrentLocation({
     geolocation: {
-      getCurrentPosition() {
-        assert.fail("Must not request permission");
+      getCurrentPosition(success, failure, options) {
+        requestedOptions = options;
+        success({
+          coords: { latitude: 33.68, longitude: -117.82, accuracy: 12.4 },
+        });
       },
     },
-    fetchImpl: async () => ({
-      ok: true,
-      json: async () => ({
-        latitude: 33.68,
-        longitude: -117.82,
-        city: "Irvine",
-      }),
-    }),
+  });
+  assert.deepEqual(requestedOptions, {
+    enableHighAccuracy: true,
+    timeout: 15000,
+    maximumAge: 0,
   });
   assert.equal(origin.lat, 33.68);
-  assert.equal(origin.precision, "Approximate network location");
-  assert.equal(origin.label, "Near Irvine (approximate)");
+  assert.equal(origin.lon, -117.82);
+  assert.equal(origin.precision, "Device location (accuracy about 12 m)");
+  assert.equal(origin.label, "My current location");
 });
-test("invalid network location does not invent coordinates", async () => {
-  await assert.rejects(
-    resolveCurrentLocation({
-      fetchImpl: async () => ({
-        ok: true,
-        json: async () => ({ latitude: null, longitude: null }),
+
+test("location permission, device failures and timeout give actionable errors", async () => {
+  for (const [code, message] of [
+    [1, /permission was denied/],
+    [2, /location services/],
+    [3, /took too long/],
+  ]) {
+    await assert.rejects(
+      resolveCurrentLocation({
+        geolocation: {
+          getCurrentPosition(success, failure) {
+            failure({ code });
+          },
+        },
       }),
-    }),
-    /unavailable/,
-  );
+      message,
+    );
+  }
+  await assert.rejects(resolveCurrentLocation({ geolocation: null }), /HTTPS/);
+});
+
+test("invalid device coordinates do not invent a location", async () => {
+  for (const coords of [
+    { latitude: null, longitude: null },
+    { latitude: 91, longitude: 0 },
+    { latitude: NaN, longitude: 0 },
+  ]) {
+    await assert.rejects(
+      resolveCurrentLocation({
+        geolocation: {
+          getCurrentPosition(success) {
+            success({ coords });
+          },
+        },
+      }),
+      /invalid location/,
+    );
+  }
 });
 
 test("address suggestions merge nearby spelling and ZIP variants, preserving distinct addresses", () => {

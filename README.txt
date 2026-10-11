@@ -22,8 +22,9 @@ What the app does
 - Provides a plain-language permit checklist and searchable per-lot guidance.
 
 Location and data
-Current Location uses ipapi.co network location without a device permission
-prompt. It is approximate; enter an address for a precise starting point.
+Current Location requests browser permission to use your device location.
+Allow location services on HTTPS (or localhost); accuracy is shown when available.
+If permission is denied or location is unavailable, enter a starting address.
 Address suggestions use Photon/OpenStreetMap. OSRM estimates road distance.
 If routing fails, travel is labeled as straight-line distance x 1.3 each way.
 Fuel prices are entered manually. No station lookups or booking/parking fees

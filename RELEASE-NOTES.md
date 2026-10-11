@@ -6,8 +6,9 @@ checklist. Existing browser data is preserved through the TruckFit migration.
 
 Planner estimates include food, payment processing and entered fuel costs.
 Booking, parking, labor and other overhead are excluded. Station lookups
-are removed. Current Location uses approximate network location without
-requesting device permission; address entry is the precise alternative.
+are removed. Current Location requests browser permission for device location
+and shows reported accuracy. Address entry remains available when permission
+is denied or device location cannot be determined.
 
 Validation includes unit tests, public-server checks, PDF integrity checks,
 formatting, and browser workflows at desktop and mobile widths. External

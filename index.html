@@ -119,7 +119,12 @@
                 Choose a suggested match to use its corrected address.
               </div>
               <div class="address-actions">
-                <button class="gps-button" id="useLocation" type="button">
+                <button
+                  class="gps-button"
+                  id="useLocation"
+                  type="button"
+                  aria-describedby="locationHelp"
+                >
                   <span aria-hidden="true">⌖</span> Use My Current Location</button
                 ><button class="textbtn" id="exampleOrigin" type="button">
                   Try Irvine City Hall</button
@@ -127,6 +132,10 @@
                   Clear
                 </button>
               </div>
+              <p class="help" id="locationHelp">
+                Allow browser location access to center the map on your device.
+                You can also enter an address.
+              </p>
               <div class="search-credit">
                 Address suggestions by Photon · © OpenStreetMap contributors
               </div>
@@ -739,7 +748,7 @@
       <div id="detailContent"></div>
     </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
-    <script type="module" src="./app.js?v=20261011-contrast"></script>
+    <script type="module" src="./app.js?v=20261011-device-location"></script>
     <dialog id="profileDialog" aria-labelledby="profileTitle">
       <div class="dialoghead">
         <h2 id="profileTitle">Your profile</h2>

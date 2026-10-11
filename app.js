@@ -273,34 +273,44 @@ async function fetchJSON(url, signal) {
 }
 
 export async function resolveCurrentLocation({
-  fetchImpl = globalThis.fetch,
+  geolocation = globalThis.navigator?.geolocation,
 } = {}) {
-  const response = await fetchImpl("https://ipapi.co/json/", {
-    credentials: "omit",
-    cache: "no-store",
-    signal: AbortSignal.timeout(5000),
-  });
-  if (!response.ok)
+  if (!geolocation?.getCurrentPosition)
     throw new Error(
-      "Current location is unavailable. Enter your starting address instead.",
+      "Location services are unavailable in this browser. Open the HTTPS website or enter your starting address.",
     );
-  const data = await response.json();
+  const position = await new Promise((resolve, reject) => {
+    geolocation.getCurrentPosition(
+      resolve,
+      (error) => {
+        const messages = {
+          1: "Location permission was denied. Allow location for this website in your browser settings, then retry, or enter your starting address.",
+          2: "Your device could not determine its location. Check that location services are enabled, then retry or enter your starting address.",
+          3: "Finding your location took too long. Retry or enter your starting address.",
+        };
+        reject(
+          new Error(
+            messages[error?.code] ||
+              "Current location is unavailable. Enter your starting address instead.",
+          ),
+        );
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+    );
+  });
+  const accuracy = position?.coords?.accuracy;
   const origin = {
-    lat: Number(data.latitude),
-    lon: Number(data.longitude),
-    label: data.city
-      ? `Near ${data.city} (approximate)`
-      : "Approximate current location",
-    precision: "Approximate network location",
+    lat: position?.coords?.latitude,
+    lon: position?.coords?.longitude,
+    label: "My current location",
+    precision:
+      Number.isFinite(accuracy) && accuracy >= 0
+        ? `Device location (accuracy about ${Math.max(1, Math.round(accuracy))} m)`
+        : "Device location",
   };
-  if (
-    data.error ||
-    data.latitude == null ||
-    data.longitude == null ||
-    !validOrigin(origin)
-  )
+  if (!validOrigin(origin))
     throw new Error(
-      "Current location is unavailable. Enter your starting address instead.",
+      "Your device returned an invalid location. Retry or enter your starting address.",
     );
   return origin;
 }
@@ -1587,11 +1597,11 @@ export async function initApp() {
     $("findAddress").disabled = false;
     const version = ++geolocationVersion;
     $("useLocation").disabled = true;
-    addressStatus("Finding your current location…");
+    addressStatus(
+      "Allow location access in your browser to find your current location…",
+    );
     try {
-      currentLocationRequest = resolveCurrentLocation({
-        fetchImpl: fetch,
-      });
+      currentLocationRequest = resolveCurrentLocation();
       const origin = await currentLocationRequest;
       if (version !== geolocationVersion) return;
       $("useLocation").disabled = false;
