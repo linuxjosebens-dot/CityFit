@@ -154,6 +154,27 @@
                 Allow browser location access to center the map on your device.
                 You can also enter an address.
               </p>
+              <details class="help" id="locationPermissionHelp">
+                <summary>No location prompt on iPhone Firefox?</summary>
+                <p>
+                  Open iPhone Settings → Privacy &amp; Security → Location
+                  Services. Turn Location Services on, select Firefox, and
+                  choose While Using the App. Return here, reload, and tap Use
+                  My Current Location. Allow Firefox’s website location request
+                  if it appears.
+                </p>
+                <p>
+                  If Firefox is not listed, tap Use My Current Location first. A
+                  website cannot reopen a permission prompt blocked by iOS or
+                  the browser. You can also enter your address.
+                </p>
+                <a
+                  href="https://support.mozilla.org/en-US/kb/how-does-firefox-ios-use-permissions-it-requests"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Firefox permission help ↗</a
+                >
+              </details>
               <div class="search-credit">
                 Address suggestions by Photon · © OpenStreetMap contributors
               </div>
@@ -830,7 +851,7 @@
       >
     </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
-    <script type="module" src="./app.js?v=20261011-mobile-location"></script>
+    <script type="module" src="./app.js?v=20261011-firefox-location"></script>
     <dialog id="profileDialog" aria-labelledby="profileTitle">
       <div class="dialoghead">
         <h2 id="profileTitle">Your profile</h2>

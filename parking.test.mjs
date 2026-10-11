@@ -361,3 +361,22 @@ test("mobile location does not retry denied permissions", async () => {
   );
   assert.equal(calls, 1);
 });
+
+test("location request recovers when a browser never answers the permission request", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  let calls = 0;
+  const pending = resolveCurrentLocation({
+    geolocation: {
+      getCurrentPosition() {
+        calls++;
+      },
+    },
+  });
+  const rejected = assert.rejects(pending, /took too long/);
+  t.mock.timers.tick(16000);
+  await Promise.resolve();
+  await Promise.resolve();
+  assert.equal(calls, 2);
+  t.mock.timers.tick(21000);
+  await rejected;
+});

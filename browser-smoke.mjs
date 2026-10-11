@@ -229,6 +229,10 @@ try {
         .textContent.includes("permission was denied"),
     );
     assert.equal(await page.locator("#useLocation").isEnabled(), true);
+    assert.equal(
+      await page.locator("#locationPermissionHelp").evaluate((el) => el.open),
+      true,
+    );
     assert.equal(await page.locator("#startAddress").inputValue(), "");
     await context.setGeolocation({
       latitude: 33.6859574,
@@ -259,6 +263,10 @@ try {
     assert.equal(deviceOrigin.lat, 33.6859574);
     assert.equal(deviceOrigin.lon, -117.8261275);
     assert.match(deviceOrigin.precision, /Device location/);
+    assert.equal(
+      await page.locator("#locationPermissionHelp").evaluate((el) => el.open),
+      false,
+    );
     assert.equal(await page.locator(".leaflet-marker-icon").count(), 11);
 
     assert.equal(await page.locator("#addressSuggestions").isHidden(), true);

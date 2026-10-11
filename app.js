@@ -281,7 +281,27 @@ export async function resolveCurrentLocation({
     );
   const request = (options) =>
     new Promise((resolve, reject) => {
-      geolocation.getCurrentPosition(resolve, reject, options);
+      let settled = false;
+      const finish = (callback, value) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        callback(value);
+      };
+      // Some mobile browsers never call either callback after dismissing a prompt.
+      const timer = setTimeout(
+        () => finish(reject, { code: 3 }),
+        options.timeout + 1000,
+      );
+      try {
+        geolocation.getCurrentPosition(
+          (position) => finish(resolve, position),
+          (error) => finish(reject, error),
+          options,
+        );
+      } catch (error) {
+        finish(reject, error);
+      }
     });
   let position;
   try {
@@ -303,7 +323,7 @@ export async function resolveCurrentLocation({
     }
   } catch (error) {
     const messages = {
-      1: "Location permission was denied. Allow location for this website and your browser in your phone settings, then retry. On iPhone, check Location Services and Safari Websites. If opened inside another app, open this site in Safari or Chrome. You can also enter your starting address.",
+      1: "Location permission was denied. Allow location for this website and your browser in your phone settings, then retry. On iPhone Firefox, open Settings → Privacy & Security → Location Services → Firefox and allow While Using the App. Then reload this page and tap Use My Current Location again. For Safari, check Safari Websites. If opened inside another app, open this site in Safari or Chrome. You can also enter your starting address.",
       2: "Your device could not determine its location. Check that location services are enabled, then retry or enter your starting address.",
       3: "Finding your location took too long. Retry with Wi-Fi or mobile data enabled, or enter your starting address.",
     };
@@ -1579,8 +1599,10 @@ export async function initApp() {
       const origin = await currentLocationRequest;
       if (version !== geolocationVersion) return;
       $("useLocation").disabled = false;
-      if (origin) setOrigin(origin);
-      else
+      if (origin) {
+        $("locationPermissionHelp").open = false;
+        setOrigin(origin);
+      } else
         addressStatus(
           "Device location is unavailable. Enter an address instead.",
           true,
@@ -1588,6 +1610,7 @@ export async function initApp() {
     } catch (error) {
       $("useLocation").disabled = false;
       if (version !== geolocationVersion) return;
+      $("locationPermissionHelp").open = true;
       addressStatus(
         error.message || "Current location is unavailable. Enter your address.",
         true,
