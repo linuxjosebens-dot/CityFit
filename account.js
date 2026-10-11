@@ -2,6 +2,15 @@ import { getFirebaseClient } from "./firebase-client.js";
 export async function initializeAccount() {
   const $ = (id) => document.getElementById(id);
   const dialog = $("profileDialog");
+  $("lightModeToggle").checked =
+    document.documentElement.dataset.theme !== "dark";
+  $("lightModeToggle").onchange = () => {
+    const saved = window.cityfitTheme?.setLight($("lightModeToggle").checked);
+    $("themeStatus").hidden = saved === true;
+    $("themeStatus").textContent = saved
+      ? ""
+      : "This setting applies now, but browser storage is unavailable.";
+  };
   $("profileButton").onclick = () => dialog.showModal();
   $("closeProfile").onclick = () => dialog.close();
   dialog.addEventListener("close", () => $("profileButton").focus());

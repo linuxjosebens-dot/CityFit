@@ -1,0 +1,169 @@
+.theme-control {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  margin: 20px 0;
+}
+.theme-control label {
+  cursor: pointer;
+  font-weight: 600;
+}
+.theme-control input {
+  appearance: none;
+  cursor: pointer;
+  width: 44px;
+  height: 26px;
+  padding: 3px;
+  background: #64748b;
+  border: 0;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+.theme-control input::before {
+  content: "";
+  display: block;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.15s;
+}
+.theme-control input:checked {
+  background: #226d63;
+}
+.theme-control input:checked::before {
+  transform: translateX(18px);
+}
+.theme-control input:focus-visible {
+  outline: 3px solid var(--teal);
+  outline-offset: 3px;
+}
+html[data-theme="dark"] {
+  --ink: #e6edf4;
+  --muted: #a9b9c8;
+  --paper: #101820;
+  --line: #334351;
+  --teal: #89d2bb;
+  --amber: #f0c181;
+  color-scheme: dark;
+}
+html[data-theme="dark"]
+  :is(
+    .topbar,
+    .panel,
+    .stat,
+    .location,
+    .empty,
+    .source,
+    .origin-panel,
+    .address-suggestions,
+    .suggestion,
+    .service-strip,
+    .map-panel,
+    .venue-card,
+    .connection-card,
+    .lot-permit-card,
+    .preview,
+    .map-label,
+    dialog,
+    .btn.secondary,
+    .close,
+    .refresh-button,
+    .google-button,
+    .auth-tabs button[aria-pressed="true"],
+    select,
+    textarea,
+    input:not([type="checkbox"]):not([type="range"])
+  ) {
+  background: #1a2631;
+  color: var(--ink);
+  border-color: var(--line);
+}
+html[data-theme="dark"]
+  :is(
+    .scenario,
+    .radius-box,
+    .detailgrid > div,
+    .detail-signals > div,
+    .evidence-pill,
+    .location-map-links a,
+    .preview-tag,
+    .planner-summary,
+    #trafficDetail,
+    .lot-permit-card[open],
+    .permit-selected-location,
+    .callout,
+    .badge,
+    .map-legend,
+    .service-strip label span
+  ) {
+  background: #263831;
+  color: #c3e5d5;
+  border-color: var(--line);
+}
+html[data-theme="dark"]
+  :is(
+    h1,
+    h2,
+    h3,
+    h4,
+    .wordmark,
+    .preview-bottom strong,
+    .venue-title,
+    .close-dialog,
+    .textbtn,
+    .quiet-link
+  ) {
+  color: var(--ink);
+}
+html[data-theme="dark"]
+  :is(
+    input[readonly],
+    #planner input[readonly],
+    #planner .planner-summary,
+    #planner #trafficDetail
+  ) {
+  background: #22313b;
+  color: var(--ink);
+}
+html[data-theme="dark"] :is(.button, .btn:not(.secondary):not(.outline)) {
+  color: #101820;
+}
+html[data-theme="dark"] :is(.btn.dark, .btn.outline) {
+  color: var(--ink);
+}
+html[data-theme="dark"] :is(.sidebar .brand, .closing h2) {
+  color: #e6edf4;
+}
+html[data-theme="dark"] .badge.blue {
+  background: #253750;
+  color: #c3d9f2;
+}
+html[data-theme="dark"] .badge.amber {
+  background: #453420;
+  color: #f0c181;
+}
+html[data-theme="dark"] .evidence-pill.unknown {
+  background: #29333d;
+  color: var(--muted);
+}
+html[data-theme="dark"]
+  :is(.leaflet-popup-content-wrapper, .leaflet-popup-tip, .leaflet-bar a) {
+  background: #1a2631;
+  color: #e6edf4;
+}
+html[data-theme="dark"] .leaflet-popup-content {
+  color: #e6edf4;
+}
+html[data-theme="dark"] dialog::backdrop {
+  background: #02070dc9;
+}
+@media (prefers-reduced-motion: reduce) {
+  .theme-control input::before {
+    transition: none;
+  }
+}

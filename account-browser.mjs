@@ -68,11 +68,40 @@ try {
     await page.locator("[data-save]").first().click();
     await page.locator("#profileButton").click();
     assert.equal(await page.locator("#profileSavedCount").textContent(), "1");
+    await page.locator("#lightModeToggle").uncheck();
+    assert.equal(await page.locator("html").getAttribute("data-theme"), "dark");
+    assert.equal(
+      await page.evaluate(() => localStorage.getItem("cityfit-theme")),
+      "dark",
+    );
+    await page.goto(base + "/intro.html");
+    assert.equal(await page.locator("html").getAttribute("data-theme"), "dark");
+    assert.equal(
+      await page
+        .locator("body")
+        .evaluate((el) => getComputedStyle(el).backgroundColor),
+      "rgb(16, 24, 32)",
+    );
+    await page.reload();
+    assert.equal(await page.locator("html").getAttribute("data-theme"), "dark");
+    await page.goto(base + "/index.html");
+    await page.waitForFunction(
+      () =>
+        document.getElementById("profileButton").textContent === "Alice Chen",
+    );
+    await page.locator("#profileButton").click();
+    assert.equal(await page.locator("#lightModeToggle").isChecked(), false);
+    await page.locator("#lightModeToggle").check();
+    assert.equal(
+      await page.locator("html").getAttribute("data-theme"),
+      "light",
+    );
     await page.locator("#signOutAccount").click();
     await page.waitForFunction(
       () => document.getElementById("profileName").textContent === "Guest",
     );
     assert.equal(await page.locator("#profileGuest").isVisible(), true);
+    assert.equal(await page.locator("#lightModeToggle").isVisible(), false);
     assert.equal(await page.locator("#profileSavedCount").textContent(), "1");
     assert.equal(
       JSON.parse(
