@@ -119,9 +119,7 @@ try {
     });
     assert.ok(accountGap >= 14);
     await page.locator("#introAccount a[href$='#planner']").click();
-    await page.waitForFunction(
-      () => !document.querySelector("#planner").hidden,
-    );
+    await page.locator("#planner").waitFor({ state: "visible" });
     assert.equal(new URL(page.url()).hash, "#planner");
 
     await page.goto(base + "/index.html");
