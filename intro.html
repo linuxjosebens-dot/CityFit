@@ -11,7 +11,7 @@
     <title>CityFit — Find your next stop</title>
     <link rel="icon" href="./favicon.svg" />
     <script src="./theme.js"></script>
-    <link rel="stylesheet" href="./intro.css" />
+    <link rel="stylesheet" href="./intro.css?v=20261011-navigation" />
     <link rel="stylesheet" href="./theme.css?v=20261011-contrast" />
   </head>
   <body>
@@ -167,7 +167,7 @@
               Enter expected orders, food costs and fuel. See your estimate
               change, then download a neatly organized PDF plan.
             </p>
-            <a href="./index.html">Build your plan →</a>
+            <a href="./index.html#planner">Build your plan →</a>
           </article>
           <article>
             <span class="step-number">03</span>
@@ -176,7 +176,7 @@
               Follow simple permit steps and get guidance for your selected lot.
               Confirm permission with the owner or agency.
             </p>
-            <a href="./index.html">Get ready to serve →</a>
+            <a href="./index.html#permits">Get ready to serve →</a>
           </article>
         </div>
       </section>
@@ -239,10 +239,15 @@
       </div>
       <div id="introAccount" hidden>
         <p id="introAccountEmail"></p>
-        <a class="button" href="./index.html">Open my planner →</a
-        ><button id="introSignOut" type="button" class="google-button">
-          Sign out
-        </button>
+        <div class="account-actions">
+          <a class="button" href="./index.html#planner">My planner →</a>
+          <a class="google-button" href="./index.html#data"
+            >Data &amp; sources →</a
+          >
+          <button id="introSignOut" type="button" class="google-button">
+            Sign out
+          </button>
+        </div>
       </div>
       <p id="authStatus" role="status" aria-live="polite">
         Accounts are not enabled yet. You can still explore CityFit.
@@ -265,6 +270,7 @@
       document.getElementById("openLogin").onclick = () =>
         loginDialog.showModal();
       document.getElementById("closeLogin").onclick = () => loginDialog.close();
+      if (location.hash === "#authDialog") loginDialog.showModal();
       loginDialog.addEventListener("close", () => {
         document.getElementById("authPassword").value = "";
         document.getElementById("openLogin").focus();

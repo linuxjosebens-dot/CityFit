@@ -68,6 +68,30 @@ try {
     await page.locator("[data-save]").first().click();
     await page.locator("#profileButton").click();
     assert.equal(await page.locator("#profileSavedCount").textContent(), "1");
+    const shortcutGap = await page
+      .locator(".profile-actions")
+      .evaluate((el) => {
+        const [planner, sources] = [...el.children].map((x) =>
+          x.getBoundingClientRect(),
+        );
+        return sources.top - planner.bottom;
+      });
+    assert.ok(shortcutGap >= 12);
+    await page.locator("[data-open-view='planner']").click();
+    assert.equal(await page.locator("#profileDialog").isVisible(), false);
+    assert.equal(await page.locator("#planner").isVisible(), true);
+    assert.equal(new URL(page.url()).hash, "#planner");
+    await page.locator("#profileButton").click();
+    await page.locator("[data-open-view='data']").click();
+    assert.equal(await page.locator("#data").isVisible(), true);
+    await page.reload();
+    await page.waitForFunction(
+      () =>
+        document.querySelector("#profileButton").textContent === "Alice Chen",
+    );
+    assert.equal(await page.locator("#data").isVisible(), true);
+    await page.locator("#profileButton").click();
+
     await page.locator("#lightModeToggle").uncheck();
     assert.equal(await page.locator("html").getAttribute("data-theme"), "dark");
     assert.equal(
@@ -84,6 +108,22 @@ try {
     );
     await page.reload();
     assert.equal(await page.locator("html").getAttribute("data-theme"), "dark");
+    await page.locator("#openLogin").click();
+    await page.locator("#introAccount").waitFor();
+    const accountGap = await page.locator(".account-actions").evaluate((el) => {
+      const boxes = [...el.children].map((x) => x.getBoundingClientRect());
+      return Math.min(
+        boxes[1].top - boxes[0].bottom,
+        boxes[2].top - boxes[1].bottom,
+      );
+    });
+    assert.ok(accountGap >= 14);
+    await page.locator("#introAccount a[href$='#planner']").click();
+    await page.waitForFunction(
+      () => !document.querySelector("#planner").hidden,
+    );
+    assert.equal(new URL(page.url()).hash, "#planner");
+
     await page.goto(base + "/index.html");
     await page.waitForFunction(
       () =>

@@ -12,7 +12,7 @@
     <link rel="icon" href="./favicon.svg" />
     <link rel="stylesheet" href="./vendor/leaflet.css" />
     <script src="./theme.js"></script>
-    <link rel="stylesheet" href="./styles.css?v=20261011-controls" />
+    <link rel="stylesheet" href="./styles.css?v=20261011-navigation" />
     <link rel="stylesheet" href="./theme.css?v=20261011-contrast" />
     <script defer src="./vendor/leaflet.js"></script>
   </head>
@@ -739,7 +739,7 @@
       <div id="detailContent"></div>
     </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
-    <script type="module" src="./app.js?v=20261011-no-calendar"></script>
+    <script type="module" src="./app.js?v=20261011-navigation"></script>
     <dialog id="profileDialog" aria-labelledby="profileTitle">
       <div class="dialoghead">
         <h2 id="profileTitle">Your profile</h2>
@@ -767,7 +767,9 @@
       </p>
       <div id="profileGuest" hidden>
         <p>Sign in with your existing Firebase account.</p>
-        <a class="btn dark" href="./intro.html">Sign in / Create account →</a>
+        <a class="btn dark" href="./intro.html#authDialog"
+          >Sign in / Create account →</a
+        >
       </div>
       <div id="profileMember" hidden>
         <dl class="profile-details">
@@ -792,6 +794,14 @@
           Sign out
         </button>
       </div>
+      <nav class="profile-actions" aria-label="Account shortcuts">
+        <a class="btn secondary" href="#planner" data-open-view="planner"
+          >My planner →</a
+        >
+        <a class="btn secondary" href="#data" data-open-view="data"
+          >Data &amp; sources →</a
+        >
+      </nav>
       <div class="profile-counts">
         <span><strong id="profileSavedCount">0</strong> saved locations</span
         ><span><strong id="profileShiftCount">0</strong> recorded shifts</span>

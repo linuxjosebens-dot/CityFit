@@ -55,6 +55,24 @@ try {
     });
     let livePrices = false;
     page.on("pageerror", (error) => errors.push(error.message));
+    if (new URL(base).hostname.endsWith(".github.io")) {
+      page.on("response", (response) => {
+        if (
+          new URL(response.url()).origin === new URL(base).origin &&
+          response.status() >= 400
+        )
+          errors.push(`HTTP ${response.status()}: ${response.url()}`);
+      });
+      page.on("request", (request) => {
+        if (
+          new URL(request.url()).origin === new URL(base).origin &&
+          new URL(request.url()).pathname.startsWith("/api/")
+        )
+          errors.push(
+            `Unavailable static-host API requested: ${request.url()}`,
+          );
+      });
+    }
     await page.route("https://tile.openstreetmap.org/**", (route) =>
       route.abort(),
     );

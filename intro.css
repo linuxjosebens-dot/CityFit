@@ -592,3 +592,17 @@ form .button {
     transition: none !important;
   }
 }
+
+.account-actions {
+  display: grid;
+  gap: 14px;
+  margin: 20px 0;
+}
+.account-actions > :is(a, button) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 44px;
+  margin: 0;
+  text-decoration: none;
+}

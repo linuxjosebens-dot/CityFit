@@ -317,6 +317,7 @@ export async function resolveCurrentLocation({
 
 export async function initApp() {
   const $ = (id) => document.getElementById(id);
+  const staticHosting = location.hostname.endsWith(".github.io");
   let state = loadState(),
     catalog = { places: [], status: "loading" },
     traffic = { segments: [], status: "loading" },
@@ -396,7 +397,10 @@ export async function initApp() {
       toast("Export your plan to keep it. Browser storage is unavailable.");
     }
   }
+  const viewIds = new Set(["locations", "planner", "permits", "data"]);
   function view(id) {
+    if (!viewIds.has(id)) return;
+    history.replaceState(null, "", `#${id}`);
     document.querySelectorAll(".view").forEach((x) => (x.hidden = x.id !== id));
     document.querySelectorAll("[data-view]").forEach((b) => {
       b.classList.toggle("active", b.dataset.view === id);
@@ -1204,20 +1208,36 @@ export async function initApp() {
   }
   async function refreshPublicSources() {
     const parkingResult = await Promise.allSettled([
-      fetchJSON("/api/location/parking"),
+      fetchJSON(
+        staticHosting ? "./parking-snapshot.json" : "/api/location/parking",
+      ),
     ]);
     if (parkingResult[0].status === "fulfilled") {
-      parking = parkingResult[0].value;
+      parking = {
+        ...parkingResult[0].value,
+        ...(staticHosting ? { status: "snapshot" } : {}),
+      };
     }
     const results = await Promise.allSettled([
-      fetchJSON("/api/location/catalog"),
-      fetchJSON("/api/location/traffic"),
+      fetchJSON(
+        staticHosting ? "./catalog-snapshot.json" : "/api/location/catalog",
+      ),
+      fetchJSON(
+        staticHosting ? "./traffic-snapshot.json" : "/api/location/traffic",
+      ),
     ]);
     if (results[0].status === "fulfilled") {
-      catalog = results[0].value;
+      catalog = {
+        ...results[0].value,
+        ...(staticHosting ? { status: "snapshot" } : {}),
+      };
       catalog.places = dedupePlaces(catalog.places || []);
     }
-    if (results[1].status === "fulfilled") traffic = results[1].value;
+    if (results[1].status === "fulfilled")
+      traffic = {
+        ...results[1].value,
+        ...(staticHosting ? { status: "snapshot" } : {}),
+      };
     render();
   }
   async function refreshProvider() {
@@ -1261,7 +1281,7 @@ export async function initApp() {
   }
   async function loadProviders() {
     try {
-      providers = await fetchJSON("/api/location/status");
+      if (!staticHosting) providers = await fetchJSON("/api/location/status");
     } catch {}
     $("placeProvider").innerHTML =
       `<option value="public">Mapped surface parking</option><option value="google" ${providers.google ? "" : "disabled"}>Google Maps${providers.google ? "" : " · not connected"}</option><option value="apple" ${providers.apple ? "" : "disabled"}>Apple Maps${providers.apple ? "" : " · not connected"}</option>`;
@@ -1718,6 +1738,14 @@ export async function initApp() {
   document
     .querySelectorAll("[data-view]")
     .forEach((b) => (b.onclick = () => view(b.dataset.view)));
+  document.querySelectorAll("[data-open-view]").forEach((link) => {
+    link.onclick = (event) => {
+      event.preventDefault();
+      $("profileDialog").close();
+      view(link.dataset.openView);
+    };
+  });
+  window.addEventListener("hashchange", () => view(location.hash.slice(1)));
   $("heroPlan").onclick = $("sidePlan").onclick = () => view("planner");
   $("changePermitLocation").onclick = () => {
     view("planner");
@@ -1860,6 +1888,7 @@ export async function initApp() {
   if (data[3].status === "fulfilled") parking = data[3].value;
   initMap();
   render();
+  if (viewIds.has(location.hash.slice(1))) view(location.hash.slice(1));
   fitMap();
   await Promise.allSettled([loadProviders(), refreshPublicSources()]);
   fitMap();
