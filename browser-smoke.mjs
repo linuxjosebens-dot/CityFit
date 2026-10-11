@@ -580,6 +580,19 @@ try {
         () => !document.getElementById("datasetSearch").disabled,
       );
       assert.equal(await page.locator("#datasetDialog").isVisible(), true);
+      if (kind === "parking") {
+        const names = await page
+          .locator("#datasetBody tr td:first-child")
+          .allTextContents();
+        assert.ok(names.length > 0);
+        assert.ok(names.every((name) => name.trim() && !/unnamed/i.test(name)));
+        assert.ok(
+          names.some((name) =>
+            /Surface Lot|Parking Lot|Mapped parking lot/.test(name),
+          ),
+        );
+      }
+
       assert.equal(
         await page.locator("#datasetBody tr").count(),
         snapshot[key].length,

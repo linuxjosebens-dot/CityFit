@@ -1962,8 +1962,22 @@ export async function initApp() {
           "Parking fee",
           "Operator",
         ];
+        const lotNames = new Map(
+          parkingPlaces(data, catalog.places, boundary, data.fetchedAt).map(
+            (place) => [place.id, place.name],
+          ),
+        );
         datasetRows = (data.elements || []).map((record) => [
-          record.tags?.name || "Unnamed mapped lot",
+          lotNames.get(`parking-${record.type}-${record.id}`) ||
+            record.tags?.name ||
+            (record.tags?.ref && `Parking Lot ${record.tags.ref}`) ||
+            [
+              record.tags?.operator,
+              record.tags?.["addr:street"],
+              `Mapped parking lot · ${record.type}/${record.id}`,
+            ]
+              .filter(Boolean)
+              .join(" · "),
           `${record.type}/${record.id}`,
           accessText(record.tags?.access),
           accessText(record.tags?.hgv),
@@ -2005,7 +2019,7 @@ export async function initApp() {
       $("datasetHead").innerHTML =
         `<tr>${headings.map((label) => `<th scope="col">${safe(label)}</th>`).join("")}</tr>`;
       $("datasetStatus").textContent =
-        `Saved snapshot · Retrieved ${dateText(data.fetchedAt)}`;
+        `Saved snapshot · Retrieved ${dateText(data.fetchedAt)}${kind === "parking" ? " · Lots without source names use descriptive labels based on nearby places or record IDs." : ""}`;
       $("datasetSearch").disabled = false;
       $("datasetDownload").href = config.url;
       $("datasetDownload").download = config.url.split("/").pop();
