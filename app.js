@@ -462,10 +462,23 @@ export async function initApp() {
         "Place search and driving-route duration.",
       ],
     ]
-      .map(
-        ([name, connected, desc]) =>
-          `<article class="connection-card"><h3>${name}</h3><span class="badge ${connected ? "" : "amber"}">${connected ? "Available" : "Account Not Connected"}</span><p>${safe(desc)}</p></article>`,
-      )
+      .map(([name, connected, desc]) => {
+        const google = name === "Google Maps";
+        const apple = name === "Apple Maps";
+        const login = new URL("https://accounts.google.com/ServiceLogin");
+        login.searchParams.set("continue", "https://www.google.com/maps");
+        const actions = google
+          ? `<div class="location-map-links"><a href="${safe(login.href)}" target="_blank" rel="noopener noreferrer">Sign in to Google Maps ↗</a><a href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer">Open Google Maps ↗</a></div><p class="help">Sign in on Google to use your saved places. CityFit cannot check your Google Maps sign-in.</p>`
+          : apple
+            ? `<div class="location-map-links"><a href="https://maps.apple.com/" target="_blank" rel="noopener noreferrer">Open Apple Maps ↗</a><a href="https://support.apple.com/en-us/111001" target="_blank" rel="noopener noreferrer">Apple Account sign-in help ↗</a></div><p class="help">Apple Maps works without a Maps login. For Apple Account features on your device, sign in through Settings.</p>`
+            : "";
+        const status = connected ? "Available" : "Live place data unavailable";
+        const note =
+          !connected && (google || apple)
+            ? `<p class="help">Maps links work now. Signing in does not enable live place data in CityFit.</p>`
+            : "";
+        return `<article class="connection-card"><h3>${name}</h3><span class="badge ${connected ? "" : "amber"}">${status}</span><p>${safe(desc)}</p>${actions}${note}</article>`;
+      })
       .join("");
   }
   function render() {

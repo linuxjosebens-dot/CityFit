@@ -517,6 +517,40 @@ try {
     assert.equal(await page.locator(".venue-card").count(), 0);
     assert.equal(await page.locator(".leaflet-marker-icon").count(), 0);
     await page.locator('[data-view="data"]').click();
+    const googleSignIn = page.getByRole("link", {
+      name: "Sign in to Google Maps ↗",
+      exact: true,
+    });
+    const login = new URL(await googleSignIn.getAttribute("href"));
+    assert.equal(login.origin, "https://accounts.google.com");
+    assert.equal(
+      login.searchParams.get("continue"),
+      "https://www.google.com/maps",
+    );
+    assert.equal(await googleSignIn.getAttribute("target"), "_blank");
+    assert.equal(
+      await page
+        .getByRole("link", { name: "Open Apple Maps ↗", exact: true })
+        .getAttribute("href"),
+      "https://maps.apple.com/",
+    );
+    assert.equal(
+      await page
+        .getByRole("link", {
+          name: "Apple Account sign-in help ↗",
+          exact: true,
+        })
+        .getAttribute("href"),
+      "https://support.apple.com/en-us/111001",
+    );
+    assert.equal(
+      await page
+        .locator("#providerConnections")
+        .getByText("Account Not Connected", { exact: true })
+        .count(),
+      0,
+    );
+
     for (const [kind, key] of [
       ["parking", "elements"],
       ["catalog", "places"],
