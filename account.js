@@ -101,8 +101,27 @@ export async function initializeAccount() {
     )
       dialog.close();
   });
+  window.cityfitUpdateGoogleAccount = () => {
+    const signedIn = Boolean(
+      currentUser?.emailVerified &&
+      currentUser.providerData?.some((p) => p.providerId === "google.com"),
+    );
+    const status = $("googleMapsAccountStatus"),
+      description = $("googleMapsAccountDescription"),
+      signIn = $("googleMapsCityFitSignIn");
+    if (status)
+      status.textContent = signedIn
+        ? "Signed in with Google"
+        : "Google sign-in available";
+    if (description)
+      description.textContent = signedIn
+        ? `You signed into CityFit with Google${currentUser.email ? " (" + currentUser.email + ")" : ""}. Open Google Maps to use your browser’s Maps session.`
+        : "Sign in to CityFit with Google, then open Google Maps for directions. Google Maps manages its own sign-in session.";
+    if (signIn) signIn.hidden = signedIn;
+  };
   function show(user) {
     currentUser = user;
+    window.cityfitUpdateGoogleAccount();
     selectedAvatar = "default";
     try {
       const saved = localStorage.getItem(avatarKey());

@@ -87,6 +87,20 @@ try {
         );
       }, key);
     }
+    assert.equal(
+      await page.locator("#googleMapsAccountStatus").textContent(),
+      "Signed in with Google",
+    );
+    assert.match(
+      await page.locator("#googleMapsAccountDescription").textContent(),
+      /alice@example.com/,
+    );
+    assert.equal(
+      await page
+        .locator("#googleMapsCityFitSignIn")
+        .evaluate((el) => el.hidden),
+      true,
+    );
     const taco = page.getByRole("radio", { name: "Taco trail" });
     await taco.check();
     await page.waitForFunction(
@@ -203,6 +217,10 @@ try {
       "light",
     );
     await page.locator("#signOutAccount").click();
+    assert.equal(
+      await page.locator("#googleMapsAccountStatus").textContent(),
+      "Google sign-in available",
+    );
     await page.waitForFunction(
       () => document.getElementById("profileName").textContent === "Guest",
     );

@@ -1,4 +1,3 @@
-import { providerApiBase } from "./provider-config.js";
 import { createShiftPlanPDF } from "./shift-plan-pdf.js";
 import { parkingPlaces } from "./parking-core.js";
 import {
@@ -12,11 +11,10 @@ import {
   parseAddressResults,
   calculateBudget,
   googleLink,
-  appleLink,
   dedupePlaces,
 } from "./location-core.js";
 import { PERMITS, LEGACY_AREAS } from "./business-data.js";
-import { initializeAccount } from "./account.js?v=20261011-more-avatars";
+import { initializeAccount } from "./account.js?v=20261011-google-links";
 
 const STORAGE = "city-fit-irvine-v1";
 const DEFAULT = {
@@ -179,9 +177,7 @@ export function loadState() {
       ? s.sortBy
       : "history";
     s.category = Object.hasOwn(CATEGORY_NAMES, s.category) ? s.category : "all";
-    s.provider = ["public", "google", "apple"].includes(s.provider)
-      ? s.provider
-      : "public";
+    s.provider = "public";
     s.saved = Array.isArray(s.saved)
       ? [...new Set(s.saved.filter((x) => typeof x === "string"))]
       : [];
@@ -359,15 +355,11 @@ export async function resolveCurrentLocation({
 export async function initApp() {
   const $ = (id) => document.getElementById(id);
   const staticHosting = location.hostname.endsWith(".github.io");
-  const liveApiBase = providerApiBase.replace(/\/$/, "");
-  const liveApiConfigured = !staticHosting || Boolean(liveApiBase);
-  const providerURL = (path) => (liveApiBase ? `${liveApiBase}${path}` : path);
   let state = loadState(),
     catalog = { places: [], status: "loading" },
     traffic = { segments: [], status: "loading" },
     boundary = null,
     providerPlaces = null,
-    providers = { city: true, osm: true, google: false, apple: false },
     visible = [],
     selected = null,
     map = null,
@@ -383,7 +375,6 @@ export async function initApp() {
     providerController = null,
     radiusTimer,
     geolocationVersion = 0,
-    routeVersion = 0,
     detailReturnId = null,
     storageWarningShown = false;
   initializeAccount();
@@ -478,53 +469,17 @@ export async function initApp() {
   }
   function updateSourceStatus() {
     $("catalogStamp").textContent = statusDate(
-      state.provider === "public" ? parking : providerPlaces,
-      state.provider === "public"
-        ? "Mapped Parking · Partial Irvine Coverage"
-        : state.provider === "google"
-          ? "Google Maps Places"
-          : "Apple Maps Places",
+      parking,
+      "Mapped Parking · Partial Irvine Coverage",
     );
     $("trafficStamp").textContent = traffic.year
       ? `City Vehicle Counts · ${traffic.year} Measurement Year · ${traffic.status === "snapshot" ? "Saved Snapshot" : "Retrieved Records"}`
       : "City Traffic · Loading";
-    $("providerConnections").innerHTML = [
-      [
-        "Mapped surface parking",
-        true,
-        "Saved lots · Partial Irvine coverage. " +
-          statusDate(parking, "Parking records"),
-      ],
-      [
-        "Google Maps",
-        providers.google,
-        "Live parking-place search, ratings, review counts and reported opening status.",
-      ],
-      [
-        "Apple Maps",
-        providers.apple,
-        "Live parking-place search and addresses. Ratings and opening status are not provided.",
-      ],
-    ]
-      .map(([name, connected, desc]) => {
-        const google = name === "Google Maps";
-        const apple = name === "Apple Maps";
-        const login = new URL("https://accounts.google.com/AccountChooser");
-        login.searchParams.set("continue", "https://www.google.com/maps");
-        const actions = google
-          ? `<div class="location-map-links"><a href="${safe(login.href)}" target="_blank" rel="noopener noreferrer">Sign in to Google Maps ↗</a><a href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer">Open Google Maps ↗</a></div><p class="help">Sign in on Google to use your saved places. CityFit cannot check your Google Maps sign-in.</p>`
-          : apple
-            ? `<div class="location-map-links"><a href="https://maps.apple.com/" target="_blank" rel="noopener noreferrer">Open Apple Maps ↗</a><a href="https://support.apple.com/en-us/111001" target="_blank" rel="noopener noreferrer">Apple Account sign-in help ↗</a></div><p class="help">Apple Maps works without a Maps login. For Apple Account features on your device, sign in through Settings.</p>`
-            : "";
-        const status = connected ? "Available" : "Live place data unavailable";
-        const note =
-          !connected && (google || apple)
-            ? `<p class="help">Maps links work now. Signing in does not enable live place data in CityFit.</p>`
-            : "";
-        return `<article class="connection-card"><h3>${name}</h3><span class="badge ${connected ? "" : "amber"}">${status}</span><p>${safe(desc)}</p>${actions}${note}</article>`;
-      })
-      .join("");
+    $("providerConnections").innerHTML =
+      `<article class="connection-card"><h3>Mapped surface parking</h3><span class="badge">Available</span><p>${safe("Saved lots · Partial Irvine coverage. " + statusDate(parking, "Parking records"))}</p></article><article class="connection-card"><h3>Google Maps</h3><span class="badge" id="googleMapsAccountStatus">Google sign-in available</span><p id="googleMapsAccountDescription">Sign in to CityFit with Google, then open Google Maps for directions. Google Maps manages its own sign-in session.</p><div class="location-map-links"><a href="./intro.html#authDialog" id="googleMapsCityFitSignIn">Sign in with Google ↗</a><a href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer">Open Google Maps ↗</a><a href="https://accounts.google.com/AccountChooser?continue=https%3A%2F%2Fwww.google.com%2Fmaps" target="_blank" rel="noopener noreferrer">Sign in to Google Maps ↗</a></div></article>`;
+    window.cityfitUpdateGoogleAccount?.();
   }
+
   function render() {
     visible = rankLocations(
       allPlaces(),
@@ -625,7 +580,7 @@ export async function initApp() {
       : '<p class="help">Choose a service location in Shift Planner first.</p>';
   }
   function locationMapLinks(p) {
-    return `<div class="location-map-links" aria-label="Maps for ${safe(p.name)}"><a data-map-provider="google" href="${safe(googleLink(p, state.origin, true))}" target="_blank" rel="noopener noreferrer" aria-label="Open ${safe(p.name)} in Google Maps (new tab)">Google Maps ↗</a><a data-map-provider="apple" href="${safe(appleLink(p, state.origin, true))}" target="_blank" rel="noopener noreferrer" aria-label="Open ${safe(p.name)} in Apple Maps (new tab)">Apple Maps ↗</a></div>`;
+    return `<div class="location-map-links" aria-label="Maps for ${safe(p.name)}"><a data-map-provider="google" href="${safe(googleLink(p, state.origin, true))}" target="_blank" rel="noopener noreferrer" aria-label="Open ${safe(p.name)} in Google Maps (new tab)">Google Maps ↗</a></div>`;
   }
   let mapAccountTrigger = null;
   document.addEventListener("click", (event) => {
@@ -640,26 +595,16 @@ export async function initApp() {
     )
       return;
     event.preventDefault();
-    const google = link.dataset.mapProvider === "google";
     mapAccountTrigger = link;
-    $("mapAccountTitle").textContent = google
-      ? "Google Maps Directions"
-      : "Apple Maps Directions";
-    $("mapAccountDescription").textContent = google
-      ? "Open your route with your existing Google Maps session, or sign in to Google first."
-      : "Open this route in Apple Maps. On your Apple device, Maps uses the Apple Account configured in Settings. Sign-in is not required for directions.";
+    $("mapAccountTitle").textContent = "Google Maps Directions";
+    $("mapAccountDescription").textContent =
+      "Open your route in Google Maps, or choose a Google account first. Google Maps manages its own sign-in session.";
     $("mapAccountContinue").href = link.href;
-    $("mapAccountContinue").textContent = google
-      ? "Open Google Maps Directions ↗"
-      : "Open Apple Maps Directions ↗";
+    $("mapAccountContinue").textContent = "Open Google Maps Directions ↗";
     const login = new URL("https://accounts.google.com/AccountChooser");
     login.searchParams.set("continue", link.href);
-    $("mapAccountSignIn").href = google
-      ? login.href
-      : "https://support.apple.com/en-us/111001";
-    $("mapAccountSignIn").textContent = google
-      ? "Sign In to Google & Open Route ↗"
-      : "Apple Account Sign-In Help ↗";
+    $("mapAccountSignIn").href = login.href;
+    $("mapAccountSignIn").textContent = "Sign In to Google & Open Route ↗";
     $("mapAccountDialog").showModal();
   });
   $("closeMapAccount").onclick = () => $("mapAccountDialog").close();
@@ -925,7 +870,7 @@ export async function initApp() {
       : "Select a nearby location to plan this shift.";
     if (p)
       $("trafficDetail").innerHTML =
-        `<div class="planner-place-heading"><strong>${safe(p.name)}</strong><span class="badge blue">${p.distance.toFixed(1)} mi</span></div><p class="planner-place-address">${safe(p.address)} <span>· Straight-line distance</span></p><p class="planner-place-permission">${state.approvals[p.id]?.status === "confirmed" ? "Your host approval is recorded for this lot." : "Confirm host permission and truck access before booking."}</p><div class="location-map-links"><a href="${safe(googleLink(p, state.origin, true))}" target="_blank" rel="noopener">Google Route ↗</a><a href="${safe(appleLink(p, state.origin, true))}" target="_blank" rel="noopener">Apple Route ↗</a></div><details class="planner-place-sources"><summary>Parking Details & Past Events</summary>${parkingEvidenceHTML(p)}<p class="planner-place-source">${p.traffic ? count(p.traffic.count) + " vehicles/day on " + safe(roadName(p.traffic.name)) + " · " + p.traffic.year : "Nearby road traffic count not reported"}<br>${safe(p.source)}</p></details>`;
+        `<div class="planner-place-heading"><strong>${safe(p.name)}</strong><span class="badge blue">${p.distance.toFixed(1)} mi</span></div><p class="planner-place-address">${safe(p.address)} <span>· Straight-line distance</span></p><p class="planner-place-permission">${state.approvals[p.id]?.status === "confirmed" ? "Your host approval is recorded for this lot." : "Confirm host permission and truck access before booking."}</p><div class="location-map-links"><a href="${safe(googleLink(p, state.origin, true))}" target="_blank" rel="noopener">Google Route ↗</a></div><details class="planner-place-sources"><summary>Parking Details & Past Events</summary>${parkingEvidenceHTML(p)}<p class="planner-place-source">${p.traffic ? count(p.traffic.count) + " vehicles/day on " + safe(roadName(p.traffic.name)) + " · " + p.traffic.year : "Nearby road traffic count not reported"}<br>${safe(p.source)}</p></details>`;
   }
   function readBudget() {
     if (!$("budgetForm").checkValidity()) return false;
@@ -1033,10 +978,7 @@ export async function initApp() {
         })),
         approval: approvalText(p.id),
         retrieved: dateText(p.fetchedAt),
-        routes: [
-          googleLink(p, state.origin, true),
-          appleLink(p, state.origin, true),
-        ],
+        routes: [googleLink(p, state.origin, true)],
       }),
       "application/pdf",
     );
@@ -1048,60 +990,21 @@ export async function initApp() {
     selectPlace(id);
     detailReturnId = id;
     $("detailContent").innerHTML =
-      `<div class="dialoghead"><div><div class="eyebrow">Irvine ${p.parking ? "parking site" : "venue"} / Rank ${p.rank}</div><h2>${safe(p.name)}</h2><span class="badge">${safe(CATEGORY_NAMES[p.category])}</span></div><button class="close" id="closeDetail" aria-label="Close venue details">×</button></div><p class="help" style="margin-top:15px">${safe(p.address)}</p><div class="detail-signals"><div><small>From Your Start</small><strong>${p.distance.toFixed(2)} mi</strong><small>Straight-Line Distance</small></div><div><small>Nearby Road Exposure</small><strong>${p.traffic ? count(p.traffic.count) : "Unknown"}</strong><small>${p.traffic ? "vehicles/day · " + p.traffic.year : "No Measured Road Within 0.15 mi"}</small></div></div>${parkingEvidenceHTML(p)}<h3>Why This Place?</h3><p class="help">This location is inside Irvine’s official boundary and your ${state.radius} Mile Radius. ${state.sortBy === "history" ? "It is ranked by recorded shift performance, published past events, historical Road Counts, and distance." : state.sortBy === "traffic" && p.traffic ? "It is ranked by the closest nearby measured Road Count." : state.sortBy === "reviews" ? "It is ranked by cumulative Google review count." : "It is ranked by reference-point distance from your confirmed starting location."}</p>${p.traffic ? `<p class="help">Nearest Measured Road: ${safe(roadName(p.traffic.name))}, ${p.traffic.distance.toFixed(2)} mi from this venue. The ${p.traffic.year} count is vehicle exposure, not venue visitors. <a href="${safe(p.traffic.source)}" target="_blank" rel="noopener">City Source ↗</a></p>` : ""}<p class="help">${safe(p.source)} · Retrieved ${dateText(p.fetchedAt)}. ${p.sourceURL ? `<a href="${safe(p.sourceURL)}" target="_blank" rel="noopener">Open Place Source ↗</a>` : ""}</p>${providers.googleRoutes || providers.appleRoutes ? `<div class="provider-routes"><strong>Travel Time</strong><div class="route-buttons">${providers.googleRoutes ? '<button class="btn secondary" id="googleETA">Get Google Travel Time</button>' : ""}${providers.appleRoutes ? '<button class="btn secondary" id="appleETA">Get Apple Travel Time</button>' : ""}</div><p id="routeResult">Choose a provider to estimate driving time.</p></div>` : ""}<div class="callout"><strong>${safe(approvalText(p.id))}</strong><p style="margin:6px 0 0">${safe(state.approvals[p.id]?.note || "Record the exact service site and host permission before booking.")}</p></div><div class="cardactions"><button class="btn" id="detailPlan">Plan This Shift →</button></div>`;
+      `<div class="dialoghead"><div><div class="eyebrow">Irvine ${p.parking ? "parking site" : "venue"} / Rank ${p.rank}</div><h2>${safe(p.name)}</h2><span class="badge">${safe(CATEGORY_NAMES[p.category])}</span></div><button class="close" id="closeDetail" aria-label="Close venue details">×</button></div><p class="help" style="margin-top:15px">${safe(p.address)}</p><div class="detail-signals"><div><small>From Your Start</small><strong>${p.distance.toFixed(2)} mi</strong><small>Straight-Line Distance</small></div><div><small>Nearby Road Exposure</small><strong>${p.traffic ? count(p.traffic.count) : "Unknown"}</strong><small>${p.traffic ? "vehicles/day · " + p.traffic.year : "No Measured Road Within 0.15 mi"}</small></div></div>${parkingEvidenceHTML(p)}<h3>Why This Place?</h3><p class="help">This location is inside Irvine’s official boundary and your ${state.radius} Mile Radius. ${state.sortBy === "history" ? "It is ranked by recorded shift performance, published past events, historical Road Counts, and distance." : state.sortBy === "traffic" && p.traffic ? "It is ranked by the closest nearby measured Road Count." : state.sortBy === "reviews" ? "It is ranked by cumulative Google review count." : "It is ranked by reference-point distance from your confirmed starting location."}</p>${p.traffic ? `<p class="help">Nearest Measured Road: ${safe(roadName(p.traffic.name))}, ${p.traffic.distance.toFixed(2)} mi from this venue. The ${p.traffic.year} count is vehicle exposure, not venue visitors. <a href="${safe(p.traffic.source)}" target="_blank" rel="noopener">City Source ↗</a></p>` : ""}<p class="help">${safe(p.source)} · Retrieved ${dateText(p.fetchedAt)}. ${p.sourceURL ? `<a href="${safe(p.sourceURL)}" target="_blank" rel="noopener">Open Place Source ↗</a>` : ""}</p><div class="callout"><strong>${safe(approvalText(p.id))}</strong><p style="margin:6px 0 0">${safe(state.approvals[p.id]?.note || "Record the exact service site and host permission before booking.")}</p></div><div class="cardactions"><button class="btn" id="detailPlan">Plan This Shift →</button></div>`;
     $("closeDetail").onclick = () => $("detailDialog").close();
     $("detailPlan").onclick = () => {
       $("detailDialog").close();
       view("planner");
     };
-    if (providers.googleRoutes)
-      $("googleETA").onclick = () => loadRoute(p, "google");
-    if (providers.appleRoutes)
-      $("appleETA").onclick = () => loadRoute(p, "apple");
     $("detailDialog").showModal();
   }
   $("detailDialog").addEventListener("close", () => {
-    routeVersion++;
     if (!$("locations").hidden && detailReturnId)
       document
         .querySelector(`[data-detail="${CSS.escape(detailReturnId)}"]`)
         ?.focus({ preventScroll: true });
   });
-  async function loadRoute(p, provider) {
-    const origin = { ...state.origin },
-      version = ++routeVersion;
-    $("routeResult").textContent = "Checking current driving time…";
-    try {
-      const q = new URLSearchParams({
-          lat: origin.lat,
-          lon: origin.lon,
-          toLat: p.lat,
-          toLon: p.lon,
-          provider,
-        }),
-        r = await fetchJSON("/api/location/route?" + q);
-      if (
-        version !== routeVersion ||
-        state.origin?.lat !== origin.lat ||
-        state.origin?.lon !== origin.lon ||
-        selected !== p.id
-      )
-        return;
-      $("routeResult").textContent =
-        `${r.provider}: ${Math.ceil(r.durationSeconds / 60)} min · ${(r.distanceMeters / 1609.344).toFixed(1)} driving mi${r.trafficAware ? " · traffic-aware" : ""}${r.baselineSeconds ? " · " + Math.max(0, Math.round((r.durationSeconds - r.baselineSeconds) / 60)) + " min above baseline" : ""}. Retrieved now.`;
-    } catch {
-      if (
-        version !== routeVersion ||
-        selected !== p.id ||
-        state.origin?.lat !== origin.lat ||
-        state.origin?.lon !== origin.lon ||
-        !$("detailDialog").open
-      )
-        return;
-      $("routeResult").textContent =
-        "Travel Time is unavailable. Open the provider map to check the route.";
-    }
-  }
+
   function initMap() {
     if (!window.L) {
       $("mapFallback").hidden = false;
@@ -1158,17 +1061,6 @@ export async function initApp() {
     });
   }
   function renderMap() {
-    const publicSource = state.provider === "public";
-    $("discoveryMap").hidden = !publicSource;
-    $("providerMapHandoff").hidden = publicSource;
-    $("resetMap").hidden = !publicSource;
-    if (!publicSource) {
-      const provider =
-        state.provider === "google" ? "Google Maps" : "Apple Maps";
-      $("providerMapHandoff").innerHTML =
-        `<strong>${provider} results</strong><p>Inspect each venue in its source map.</p>${visible.map((p) => `<a href="${safe(state.provider === "google" ? googleLink(p, state.origin) : appleLink(p, state.origin))}" target="_blank" rel="noopener">${p.rank}. ${safe(p.name)} ↗</a>`).join("")}`;
-      return;
-    }
     if (!map) return;
     const L = window.L;
     pinLayer.clearLayers();
@@ -1304,66 +1196,15 @@ export async function initApp() {
     render();
   }
   async function refreshProvider() {
-    providerController?.abort();
-    const version = ++providerVersion;
-    if (state.provider === "public") {
-      providerPlaces = null;
-      render();
-      return;
-    }
-    if (!state.origin) return;
-    const provider = state.provider,
-      origin = { ...state.origin },
-      radius = state.radius,
-      controller = new AbortController();
-    providerController = controller;
     providerPlaces = null;
-    render();
-    const timer = setTimeout(() => controller.abort(), 20000);
-    try {
-      const q = new URLSearchParams({
-          provider,
-          lat: origin.lat,
-          lon: origin.lon,
-          radius,
-        }),
-        data = await fetchJSON(
-          providerURL("/api/location/places?" + q),
-          controller.signal,
-        );
-      if (version !== providerVersion) return;
-      providerPlaces = data;
-      render();
-    } catch {
-      if (version !== providerVersion) return;
-      providerPlaces = { places: [], status: "unavailable", fetchedAt: null };
-      render();
-      $("resultDescription").textContent =
-        "The selected source is unavailable. Choose Mapped surface parking or retry.";
-      toast("Map source unavailable. Public venue records are available.");
-    } finally {
-      clearTimeout(timer);
-    }
   }
   async function loadProviders() {
-    try {
-      if (liveApiConfigured)
-        providers = await fetchJSON(providerURL("/api/location/status"));
-    } catch {}
+    state.provider = "public";
     $("placeProvider").innerHTML =
-      `<option value="public">Mapped surface parking</option><option value="google" ${providers.google ? "" : "disabled"}>Google Maps${providers.google ? "" : " · not connected"}</option><option value="apple" ${providers.apple ? "" : "disabled"}>Apple Maps${providers.apple ? "" : " · not connected"}</option>`;
-    if (
-      (state.provider === "google" && !providers.google) ||
-      (state.provider === "apple" && !providers.apple)
-    )
-      state.provider = "public";
-    if (state.sortBy === "reviews" && state.provider !== "google")
-      state.sortBy = "nearest";
-    $("placeProvider").value = state.provider;
+      '<option value="public">Mapped surface parking</option>';
+    $("placeProvider").value = "public";
     syncSort();
-    save();
     updateSourceStatus();
-    if (state.provider !== "public") await refreshProvider();
   }
   function syncSort() {
     $("sortAreas").innerHTML =

@@ -97,7 +97,6 @@ export function createShiftPlanPDF(plan) {
   );
   const routeY = Math.min(y + 14, 724);
   text("Google Route", 40, routeY, 10, true, teal);
-  text("Apple Route", 165, routeY, 10, true, teal);
   rect(40, routeY + 22, 532, 1, "0.86 0.90 0.88");
   text(
     "Estimate based on your inputs. Confirm host permission and truck access.",
@@ -119,7 +118,7 @@ export function createShiftPlanPDF(plan) {
   const objects = [
     "<< /Type /Catalog /Pages 2 0 R >>",
     "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
-    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R /Annots [7 0 R 8 0 R] >>",
+    `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R /Annots [${plan.routes.map((_, i) => `${7 + i} 0 R`).join(" ")}] >>`,
     "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
     "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>",
     `<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`,

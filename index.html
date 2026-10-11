@@ -271,12 +271,6 @@
               <label for="placeProvider">Location Source</label
               ><select id="placeProvider">
                 <option value="public">Mapped Surface Parking</option>
-                <option value="google" disabled>
-                  Google Maps · Not Connected
-                </option>
-                <option value="apple" disabled>
-                  Apple Maps · Not Connected
-                </option>
               </select>
             </div>
             <label class="checkline"
@@ -313,7 +307,6 @@
                 The map is unavailable. Your ranked locations and map links
                 remain available.
               </div>
-              <div class="map-provider" id="providerMapHandoff" hidden></div>
               <div class="map-legend">
                 <span><i class="legend-origin"></i>Your Starting Point</span
                 ><span><i class="legend-venue"></i>Ranked Parking Lots</span
@@ -854,7 +847,7 @@
       >
     </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
-    <script type="module" src="./app.js?v=20261011-live-places"></script>
+    <script type="module" src="./app.js?v=20261011-google-links"></script>
     <dialog id="profileDialog" aria-labelledby="profileTitle">
       <div class="dialoghead">
         <h2 id="profileTitle">Your profile</h2>

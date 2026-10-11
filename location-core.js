@@ -177,7 +177,11 @@ export function rankLocations(places, settings, boundary, traffic) {
         nearest(a, b),
     );
   else if (settings.sortBy === "footTraffic")
-    result.sort((a, b) => (b.footTraffic?.count ?? -1) - (a.footTraffic?.count ?? -1) || nearest(a, b));
+    result.sort(
+      (a, b) =>
+        (b.footTraffic?.count ?? -1) - (a.footTraffic?.count ?? -1) ||
+        nearest(a, b),
+    );
   else if (settings.sortBy === "traffic")
     result.sort(
       (a, b) =>
@@ -297,17 +301,6 @@ export function googleLink(place, origin, route = false) {
   }
   return u.href;
 }
-export function appleLink(place, origin, route = false) {
-  const u = new URL("https://maps.apple.com/");
-  u.searchParams.set(route ? "daddr" : "ll", place.lat + "," + place.lon);
-  if (route) {
-    u.searchParams.set("dirflg", "d");
-    if (validPoint(origin))
-      u.searchParams.set("saddr", origin.lat + "," + origin.lon);
-  } else u.searchParams.set("q", place.name);
-  return u.href;
-}
-
 export function shiftEvidence(place, logs, cuisine) {
   const exact = logs.filter(
     (l) => l.area === place.id && (!cuisine || l.cuisine === cuisine),
@@ -357,48 +350,56 @@ export function forecastShiftOrders(
 // These nearby survey counts do not measure lot visitors or live crowds.
 export const PEDESTRIAN_SITES = [
   {
-    "id": "12015",
-    "lat": 33.679016,
-    "lon": -117.756957,
-    "start": "2025-01-01",
-    "end": "2025-05-28",
-    "observedHours": 181,
-    "count": 1.729281767955801
+    id: "12015",
+    lat: 33.679016,
+    lon: -117.756957,
+    start: "2025-01-01",
+    end: "2025-05-28",
+    observedHours: 181,
+    count: 1.729281767955801,
   },
   {
-    "id": "12016",
-    "lat": 33.766884,
-    "lon": -117.867423,
-    "start": "2025-03-07",
-    "end": "2025-08-25",
-    "observedHours": 1917,
-    "count": 5.723526343244653
+    id: "12016",
+    lat: 33.766884,
+    lon: -117.867423,
+    start: "2025-03-07",
+    end: "2025-08-25",
+    observedHours: 1917,
+    count: 5.723526343244653,
   },
   {
-    "id": "12017",
-    "lat": 33.769355,
-    "lon": -117.867383,
-    "start": "2025-03-10",
-    "end": "2025-12-31",
-    "observedHours": 4805,
-    "count": 7.035379812695109
+    id: "12017",
+    lat: 33.769355,
+    lon: -117.867383,
+    start: "2025-03-10",
+    end: "2025-12-31",
+    observedHours: 4805,
+    count: 7.035379812695109,
   },
   {
-    "id": "12036",
-    "lat": 33.787837,
-    "lon": -117.878548,
-    "start": "2025-09-03",
-    "end": "2025-12-31",
-    "observedHours": 2362,
-    "count": 5.1735817104149024
-  }
+    id: "12036",
+    lat: 33.787837,
+    lon: -117.878548,
+    start: "2025-09-03",
+    end: "2025-12-31",
+    observedHours: 2362,
+    count: 5.1735817104149024,
+  },
 ];
 export function nearestFootTraffic(place, maxDistance = 0.15) {
   let best = null;
   for (const site of PEDESTRIAN_SITES) {
     const distance = distanceMiles(place, site);
     if (distance === null || distance > maxDistance) continue;
-    if (!best || distance < best.distance) best = { ...site, distance, year: 2025, unit: "pedestrians per observed hour", source: "Caltrans pedestrian hourly counts", sourceURL: "https://data.ca.gov/%40caltrans/at-count-dataset" };
+    if (!best || distance < best.distance)
+      best = {
+        ...site,
+        distance,
+        year: 2025,
+        unit: "pedestrians per observed hour",
+        source: "Caltrans pedestrian hourly counts",
+        sourceURL: "https://data.ca.gov/%40caltrans/at-count-dataset",
+      };
   }
   return best;
 }

@@ -299,7 +299,7 @@ try {
     assert.equal(await page.locator(".leaflet-marker-icon").count(), 11);
     assert.equal(
       await page.locator(".venue-card .location-map-links a").count(),
-      20,
+      10,
     );
     assert.match(
       await page.locator("#catalogStamp").innerText(),
@@ -326,20 +326,6 @@ try {
       await page.locator("#mapAccountContinue").getAttribute("href"),
     );
     await page.locator("#closeMapAccount").click();
-    await page
-      .locator('.venue-card [data-map-provider="apple"]')
-      .first()
-      .click();
-    assert.match(
-      await page.locator("#mapAccountDescription").innerText(),
-      /Apple Account configured in Settings/,
-    );
-    assert.equal(
-      new URL(await page.locator("#mapAccountContinue").getAttribute("href"))
-        .hostname,
-      "maps.apple.com",
-    );
-    await page.keyboard.press("Escape");
     const googleURL = new URL(
       await page
         .locator(".venue-card .location-map-links a")
@@ -348,15 +334,6 @@ try {
     );
     assert.equal(googleURL.hostname, "www.google.com");
     assert.ok(googleURL.searchParams.get("destination"));
-    assert.equal(
-      new URL(
-        await page
-          .locator(".venue-card .location-map-links a")
-          .nth(1)
-          .getAttribute("href"),
-      ).hostname,
-      "maps.apple.com",
-    );
     assert.equal(
       await page
         .locator(".eyebrow")
@@ -449,11 +426,7 @@ try {
     await page.locator("[data-detail]").first().click();
     await page.locator("#detailDialog[open]").waitFor();
     assert.equal(
-      await page
-        .locator(
-          '#detailDialog a[href*="google.com/maps"], #detailDialog a[href*="maps.apple.com"]',
-        )
-        .count(),
+      await page.locator('#detailDialog a[href*="google.com/maps"]').count(),
       0,
     );
 
@@ -541,21 +514,6 @@ try {
       "https://www.google.com/maps",
     );
     assert.equal(await googleSignIn.getAttribute("target"), "_blank");
-    assert.equal(
-      await page
-        .getByRole("link", { name: "Open Apple Maps ↗", exact: true })
-        .getAttribute("href"),
-      "https://maps.apple.com/",
-    );
-    assert.equal(
-      await page
-        .getByRole("link", {
-          name: "Apple Account sign-in help ↗",
-          exact: true,
-        })
-        .getAttribute("href"),
-      "https://support.apple.com/en-us/111001",
-    );
     assert.equal(
       await page
         .locator("#providerConnections")
