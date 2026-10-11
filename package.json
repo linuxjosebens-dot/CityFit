@@ -10,7 +10,7 @@
     "start": "node server.mjs",
     "test": "node --test *.test.mjs",
     "test:browser": "node browser-smoke.mjs",
-    "format:check": "prettier --check app.js shift-plan-pdf.js index.html styles.css location-core.js parking-core.js parking-history.js business-data.js server.mjs privacy.html *.test.mjs browser-smoke.mjs"
+    "format:check": "prettier --check app.js intro.js auth-config.js intro.html intro.css shift-plan-pdf.js index.html styles.css location-core.js parking-core.js parking-history.js business-data.js server.mjs privacy.html *.test.mjs browser-smoke.mjs"
   },
   "devDependencies": {
     "playwright": "1.64.0",
